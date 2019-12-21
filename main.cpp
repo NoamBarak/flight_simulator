@@ -16,7 +16,7 @@
 //using namespace std;
 
 int SleepCommand::execute(vector<string> vector, int index) {
-    cout << "Sleeping" << endl;
+    cout << "Sleeping ..." << endl;
     return 2;
 }
 
@@ -199,49 +199,8 @@ int PrintCommand::execute(vector<string> vector, int index) {
 }
 
 int DefineVarCommand::execute(vector<string> vector, int index) {
-    cout << "Sleeping" << endl;
+    cout << "var shit" << endl;
     return 2;
-}
-
-unordered_map<string, Command> initCommandMap() {
-    /*unordered_map<string, Command*> map ;
-    //map<string, Command*> map1 ;
-    OpenServerCommand openServerCommand = OpenServerCommand();
-    Command& openServerCommand1 = openServerCommand;
-    map.emplace(std::make_pair("openDataServer",&openServerCommand1));
-    ConnectCommand connectCommand = ConnectCommand();
-    Command& connectCommand1 = connectCommand;
-    map.emplace(std::make_pair("connectControlClient",&connectCommand1));
-    DefineVarCommand defineVarCommand = DefineVarCommand();
-    Command& defineVarCommand1 = defineVarCommand;
-    map.emplace(std::make_pair("var",&defineVarCommand1));
-    PrintCommand printCommand = PrintCommand();
-    Command& printCommand1 = printCommand;
-    map.emplace(std::make_pair("Print",&printCommand1));
-    SleepCommand sleepCommand = SleepCommand();
-    Command& sleepCommand1 = sleepCommand;
-    map.emplace(std::make_pair("Sleep",&sleepCommand1));
-    std::cout << typeid(sleepCommand1).name() << '\n';*/
-    unordered_map<string, Command> map;
-    //map<string, Command*> map1 ;
-/*    OpenServerCommand openServerCommand = OpenServerCommand();
-    Command &openServerCommand1 = openServerCommand;
-    map.emplace(std::make_pair("openDataServer", openServerCommand1));
-    ConnectCommand connectCommand = ConnectCommand();
-    Command &connectCommand1 = connectCommand;
-    map.emplace(std::make_pair("connectControlClient", connectCommand1));
-    DefineVarCommand defineVarCommand = DefineVarCommand();
-    Command &defineVarCommand1 = defineVarCommand;
-    map.emplace(std::make_pair("var", defineVarCommand1));
-    PrintCommand printCommand = PrintCommand();
-    Command &printCommand1 = printCommand;
-    map.emplace(std::make_pair("Print", printCommand1));*/
-    SleepCommand sleepCommand = SleepCommand();
-    Command &sleepCommand1 = sleepCommand;
-    map.emplace(std::make_pair("Sleep", sleepCommand1));
-    cout<<"here!!!!!!!!!\n"<<endl;
-    std::cout <<"here " << typeid(sleepCommand1).name() << '\n';
-    return map;
 }
 
 //read file
@@ -312,11 +271,38 @@ vector<string> lexer() {
 }
 
 int main() {
+    // Initializing the <string,Command*> map
+    unordered_map<string, Command*> map ;
+
+    OpenServerCommand openServerCommand = OpenServerCommand();
+    Command* openServerCommand2 = &openServerCommand;
+    map.emplace(std::make_pair("openDataServer", openServerCommand2));
+
+    ConnectCommand connectCommand = ConnectCommand();
+    Command* connectCommand2 = &connectCommand;
+    map.emplace(std::make_pair("connectControlClient", connectCommand2));
+
+    DefineVarCommand defineVarCommand = DefineVarCommand();
+    Command* defineVarCommand2 = &defineVarCommand;
+    map.emplace(std::make_pair("var", defineVarCommand2));
+
+    SleepCommand sleepCommand = SleepCommand();
+    Command* sleepCommand2 = &sleepCommand;
+    map.emplace(std::make_pair("Sleep", sleepCommand2));
+
+    PrintCommand printCommand = PrintCommand();
+    Command* printCommand2 = &printCommand;
+    map.emplace(std::make_pair("Print", printCommand2));
+    // Initializing the vector
     vector<string> fileVector;
-    unordered_map<string, Command> map = initCommandMap();
     fileVector = lexer();
-    Command* c = &map.at("Sleep");
-    std::cout <<"here " << typeid(c).name() << '\n';
+
+    Command* c = map.at("Print");
+    std::cout <<"here 0 : " << typeid(c).name() << '\n';
+    int k= c->execute(fileVector,1);
+    (map.at("Sleep"))->execute(fileVector,1);
+    (map.at("var"))->execute(fileVector,1);
+    //(map.at("openDataServer"))->execute(fileVector,0);
     int i = 0;
 /*
     //Command* c {map.at("OpenDataServer")};
@@ -329,11 +315,11 @@ int main() {
        // i += c->execute(fileVector, i);
 
 
-    OpenServerCommand *openServerCommand = new OpenServerCommand;
+    //OpenServerCommand *openServerCommand = new OpenServerCommand;
     //i += openServerCommand->execute(fileVector, i);
 
 
-    ConnectCommand *connectCommand = new ConnectCommand;
+    //ConnectCommand *connectCommand = new ConnectCommand;
     //connectCommand->execute(fileVector, i);
     // Noam Testing line 287 bkbkjbkjb
 
@@ -373,8 +359,8 @@ int main() {
 
     // Karin Testing line 323
 
-    OpenServerCommand *openServerCommand1 = new OpenServerCommand;
-    i += openServerCommand1->execute(fileVector, i);
+    //OpenServerCommand *openServerCommand1 = new OpenServerCommand;
+    //i += openServerCommand1->execute(fileVector, i);
 
 
 
