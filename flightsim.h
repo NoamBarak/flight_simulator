@@ -8,7 +8,7 @@
 #include "Command.h"
 class SleepCommand : public Command {
 public:
-    int virtual execute(vector<string> vector,int index) ;
+    int virtual execute(vector<string> vector,int index) override;
 };
 class OpenServerCommand : public Command {
 public:
@@ -17,16 +17,16 @@ public:
 
 class ConnectCommand : public Command {
 public:
-    int virtual execute(vector<string> vector,int index)  ;
+    int virtual execute(vector<string> vector,int index)  override ;
 };
 
 class DefineVarCommand : public Command {
 public:
-    int execute(vector<string> vector,int index)  ;
+    int execute(vector<string> vector,int index)  override ;
 };
 
 class PrintCommand : public Command {
 public:
-    int execute(vector<string> vector,int index)  ;
+    int execute(vector<string> vector,int index)  override ;
 };
 #endif //ADVANCEDE3_FLIGHTSIM_H

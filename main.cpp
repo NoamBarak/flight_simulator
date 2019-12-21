@@ -16,7 +16,7 @@
 //using namespace std;
 
 int SleepCommand::execute(vector<string> vector, int index) {
-    cout << "Sleeping" << endl;
+    cout << "Sleeping ..." << endl;
     return 2;
 }
 
@@ -80,7 +80,7 @@ void runServer(unsigned short portShort) {
         std::cerr << "Error in accepting client" << endl;
         exit(-4);
     }*/
-    //create socket
+    /*//create socket
     int socketfd = socket(AF_INET, SOCK_STREAM, 0);
     if (socketfd == -1) {
         //error
@@ -120,12 +120,63 @@ void runServer(unsigned short portShort) {
     if (client_socket == -1) {
         std::cerr << "Error accepting client" << std::endl;
         exit(-4);
-    }
+    }else
+        cout<<"Accepted client"<<endl;
 
     close(socketfd); //closing the listening socket
 
     //reading from client
     while (true) {
+        char buffer[1024] = {0};
+        int valread = read(client_socket, buffer, 1024);
+        std::cout << buffer << std::endl;
+    }*/
+    //create socket
+    int socketfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (socketfd == -1) {
+        //error
+        std::cerr << "Could not create a socket"<<std::endl;
+        exit (-1);
+    }
+
+    //bind socket to IP address
+    // we first need to create the sockaddr obj.
+    sockaddr_in address; //in means IP4
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY; //give me any IP allocated for my machine
+    address.sin_port = htons(portShort);
+    //we need to convert our number
+    // to a number that the network understands.
+
+    //the actual bind command
+    if (bind(socketfd, (struct sockaddr *) &address, sizeof(address)) == -1) {
+        std::cerr<<"Could not bind the socket to an IP"<<std::endl;
+        exit (-2);
+    }
+
+    //making socket listen to the port
+
+    if (listen(socketfd, 5) == -1) { //can also set to SOMAXCON (max connections)
+        std::cerr<<"Error during listening command"<<std::endl;
+        exit (-3);
+    } else{
+        std::cout<<"Server is now listening ..."<<std::endl;
+    }
+
+    // accepting a client
+    sockaddr_in Caddress;
+    int client_socket = accept(socketfd, (struct sockaddr *)&Caddress,
+                               (socklen_t*)&Caddress);
+
+    if (client_socket == -1) {
+        std::cerr<<"Error accepting client"<<std::endl;
+        exit (-4);
+    }
+
+    close(socketfd); //closing the listening socket
+
+    //reading from client
+    while(true) {
         char buffer[1024] = {0};
         int valread = read(client_socket, buffer, 1024);
         std::cout << buffer << std::endl;
@@ -148,231 +199,110 @@ int PrintCommand::execute(vector<string> vector, int index) {
 }
 
 int DefineVarCommand::execute(vector<string> vector, int index) {
-    cout << "Sleeping" << endl;
+    cout << "var shit" << endl;
     return 2;
-}
-
-unordered_map<string, Command> initCommandMap() {
-    /*unordered_map<string, Command*> map ;
-    //map<string, Command*> map1 ;
-    OpenServerCommand openServerCommand = OpenServerCommand();
-    Command& openServerCommand1 = openServerCommand;
-    map.emplace(std::make_pair("openDataServer",&openServerCommand1));
-    ConnectCommand connectCommand = ConnectCommand();
-    Command& connectCommand1 = connectCommand;
-    map.emplace(std::make_pair("connectControlClient",&connectCommand1));
-    DefineVarCommand defineVarCommand = DefineVarCommand();
-    Command& defineVarCommand1 = defineVarCommand;
-    map.emplace(std::make_pair("var",&defineVarCommand1));
-    PrintCommand printCommand = PrintCommand();
-    Command& printCommand1 = printCommand;
-    map.emplace(std::make_pair("Print",&printCommand1));
-    SleepCommand sleepCommand = SleepCommand();
-    Command& sleepCommand1 = sleepCommand;
-    map.emplace(std::make_pair("Sleep",&sleepCommand1));
-    std::cout << typeid(sleepCommand1).name() << '\n';*/
-    unordered_map<string, Command> map;
-    //map<string, Command*> map1 ;
-/*    OpenServerCommand openServerCommand = OpenServerCommand();
-    Command &openServerCommand1 = openServerCommand;
-    map.emplace(std::make_pair("openDataServer", openServerCommand1));
-    ConnectCommand connectCommand = ConnectCommand();
-    Command &connectCommand1 = connectCommand;
-    map.emplace(std::make_pair("connectControlClient", connectCommand1));
-    DefineVarCommand defineVarCommand = DefineVarCommand();
-    Command &defineVarCommand1 = defineVarCommand;
-    map.emplace(std::make_pair("var", defineVarCommand1));
-    PrintCommand printCommand = PrintCommand();
-    Command &printCommand1 = printCommand;
-    map.emplace(std::make_pair("Print", printCommand1));*/
-    SleepCommand sleepCommand = SleepCommand();
-    Command &sleepCommand1 = sleepCommand;
-    map.emplace(std::make_pair("Sleep", sleepCommand1));
-    cout<<"here!!!!!!!!!\n"<<endl;
-    std::cout <<"here " << typeid(sleepCommand1).name() << '\n';
-    return map;
-}
-void openDataServerCommand(string line, string checkCom, int i, vector<string> *v1) {
-    string port;
-    //insert the relevant command into vector
-    v1->push_back(checkCom);
-    i = i + checkCom.length();
-    //insert the value into vector
-    //i+1, and line.length()-1-(i+1) because of the parentheses
-    port = line.substr(i + 1, line.length() - 1 - (i + 1));
-    v1->push_back(port);
-}
-
-void connectControlClientCommand(string line, string checkCom, vector<string> *v1) {
-    string address, value;
-    int saveFirst, saveSecond, saveComma;
-    int len = line.length();
-    saveFirst = line.find_first_of('"');
-    saveSecond = line.find_first_of('"', saveFirst + 1);
-    saveComma = line.find_first_of(",");
-    //insert the relevant command into vector
-    v1->push_back(checkCom);
-    //insert address into vector
-    v1->push_back(line.substr(saveFirst, saveSecond - saveFirst + 1));
-    //insert port into vector
-    v1->push_back(line.substr(saveComma + 1, len - saveComma - 2));
-}
-
-void printOrSleepCommand(string line, string checkCom, vector<string> *v1) {
-    int len = line.length();
-    int firstParen = line.find_first_of("(");
-    //insert the relevant command into vector
-    v1->push_back(checkCom);
-    //insert address into vector
-    v1->push_back(line.substr(firstParen + 1, len - firstParen - 2));
-}
-
-void varCommand(string line, string checkCom, vector<string> *v1, int i) {
-    int len = line.length();
-    i = i + checkCom.length() + 1;
-    int spaceBeforeArrow = line.find_first_of(" ", i);
-    int spaceAfterArrow = line.find_first_of(" ", spaceBeforeArrow + 1);
-    int arrowOrEq = line.find_first_of("(", spaceAfterArrow + 1);
-    string checkIfArrow = line.substr(spaceBeforeArrow + 1, spaceAfterArrow - spaceBeforeArrow - 1);
-    //insert the relevant command into vector
-    v1->push_back(checkCom);
-    //insert name of var into vector
-    v1->push_back(line.substr(i, spaceBeforeArrow - i));
-    //insert arrow or '=' into vector
-    v1->push_back(line.substr(spaceBeforeArrow + 1, spaceAfterArrow - spaceBeforeArrow - 1));
-    if (checkIfArrow.find("<") != -1 || checkIfArrow.find(">") != -1) {
-        //insert the word "sim"
-        v1->push_back(line.substr(spaceAfterArrow + 1, arrowOrEq - spaceAfterArrow - 1));
-        //insert address into vector
-        v1->push_back(line.substr(arrowOrEq + 1, len - arrowOrEq - 2));
-    } else {
-        int placeOfEq = line.find_first_of("=");
-        int spacePlace = line.find_first_of(" ", placeOfEq);
-        //insert the string after '='
-        v1->push_back(line.substr(spacePlace + 1));
-    }
-}
-
-void otherCasesCommand(string line, string checkCom, vector<string> *v1) {
-    int firstLetter = line.find_first_not_of("\t");
-    int eqSignPlace = line.find_first_of("=");
-    //insert name of var into vector
-    string str = (line.substr(firstLetter, eqSignPlace-firstLetter));
-    char lastPlace = str[str.length() - 1];
-    //there is a white space between the variable and '='
-    if (lastPlace == ' ') {
-        v1->push_back(line.substr(firstLetter, eqSignPlace-firstLetter - 1));
-    } else {
-        v1->push_back(line.substr(firstLetter, eqSignPlace-firstLetter));
-    }
-    v1->push_back("=");
-    int valueBegin = line.find_first_not_of(" ", eqSignPlace + 1);
-    str = line.substr(valueBegin);
-    v1->push_back(str);
 }
 
 //read file
 vector<string> lexer() {
-    string right = "->";
-    string check;
     vector<string> v1;
     int len;
     vector<string> fileVector;
-    string line, checkCom;
+    string line;
     ifstream file;
     file.open("fly.txt");
     if (!file.is_open()) {
         cout << "Unable to open file\n" << endl;
     } else {
-        while (!file.eof()) {
+        while (!file.eof()) {//not the end of the file
             getline(file, line);
             len = line.length();
-            for (int i = 0; i < len;) {
-                int firstLetter = line.find_first_not_of("\t");
-                checkCom = line.substr(firstLetter, 14);
-                //openDataServer command
-                if (checkCom == "openDataServer") {
-                    openDataServerCommand(line, checkCom, i, &v1);
-                    break;
-                }
-                checkCom = line.substr(firstLetter, 20);
-                //connectControlClient command
-                if (checkCom == "connectControlClient") {
-                    connectControlClientCommand(line, checkCom, &v1);
-                    break;
-                }
-                checkCom = line.substr(firstLetter, 5);
-                //Print or Sleep command
-                if (checkCom == "Print" || checkCom == "Sleep") {
-                    printOrSleepCommand(line, checkCom, &v1);
-                    break;
-                }
-                checkCom = line.substr(firstLetter, 3);
-                //defineVar command
-                if (checkCom == "var") {
-                    varCommand(line, checkCom, &v1, i);
-                    break;
-
-                }
-
-                //other cases
-                if (line.find("{") == -1) {
-                    otherCasesCommand(line, checkCom, &v1);
-                    break;
-                } else {
-                    //LOOP or CONDITION!
-                    int firstSpace = line.find_first_of(" ");
-                    int findParen = line.find_first_of("{");
-                    string cond = (line.substr(firstSpace + 1, findParen - firstSpace - 1));
-                    char lastPlace = cond[cond.length() - 1];
-                    //check if there is a white space at the end of the condition
-                    if (lastPlace == ' ') {
-                        cond = (line.substr(firstSpace + 1, findParen - firstSpace - 2));
-                    }
-                    //insert 'while' or 'if'
-                    v1.push_back(line.substr(0, firstSpace));
-                    //insert condition
-                    v1.push_back(cond);
-                    //insert '{'
-                    v1.push_back("{");
-                    getline(file, line);
-                    while (line.find("}") == -1) {
-                        firstLetter = line.find_first_not_of("\t");
-                        checkCom = line.substr(firstLetter, 5);
-                        //Print or Sleep command
-                        if (checkCom == "Print" || checkCom == "Sleep") {
-                            printOrSleepCommand(line, checkCom, &v1);
-                        }
-                        else {
-                            checkCom = line.substr(firstLetter, 3);
-                            //defineVar command
-                            if (checkCom == "var") {
-                                varCommand(line, checkCom, &v1, i);
-                            } else {
-                                if (line.find("{") == -1) {
-                                    otherCasesCommand(line, checkCom, &v1);
-                                }
-                            }
-                        }
-                        getline(file, line);
-                    }
-                    v1.push_back("}");
-                }
-                break;
-
+            char *v = new char[len];
+            strcpy(v, line.c_str());
+            char *splitLine = strtok(v, " ");
+            //split- SPACE
+            while (splitLine) {
+                v1.push_back(splitLine);
+                splitLine = strtok(NULL, " ");
             }
         }
     }
     file.close();
-    return v1;
+    vector<string> v2;
+    int fileVecSize = v1.size();
+    // split- LEFT PAREN
+    for (int i = 0; i < fileVecSize; i++) {
+        len = v1[i].length() + 1;
+        char *v = new char[len];
+        strcpy(v, v1[i].c_str());
+        char *splitLine = strtok(v, "(");
+        while (splitLine) {
+            v2.push_back(splitLine);
+            splitLine = strtok(NULL, "(");
+        }
+    }
+    vector<string> v3;
+    fileVecSize = v2.size();
+    // split- RIGHT PAREN
+    for (int i = 0; i < fileVecSize; i++) {
+        len = v2[i].length() + 1;
+        char *v = new char[len];
+        strcpy(v, v2[i].c_str());
+        char *splitLine = strtok(v, ")");
+        while (splitLine) {
+            v3.push_back(splitLine);
+            splitLine = strtok(NULL, ")");
+        }
+    }
+    fileVecSize = v3.size();
+    // split- COMMA
+    for (int i = 0; i < fileVecSize; i++) {
+        len = v3[i].length() + 1;
+        char *v = new char[len];
+        strcpy(v, v3[i].c_str());
+        char *splitLine = strtok(v, ",");
+        while (splitLine) {
+            fileVector.push_back(splitLine);
+            // cout << splitLine << endl;
+            splitLine = strtok(NULL, ",");
+        }
+    }
+    return fileVector;
 }
 
 int main() {
+    // Initializing the <string,Command*> map
+    unordered_map<string, Command*> map ;
+
+    OpenServerCommand openServerCommand = OpenServerCommand();
+    Command* openServerCommand2 = &openServerCommand;
+    map.emplace(std::make_pair("openDataServer", openServerCommand2));
+
+    ConnectCommand connectCommand = ConnectCommand();
+    Command* connectCommand2 = &connectCommand;
+    map.emplace(std::make_pair("connectControlClient", connectCommand2));
+
+    DefineVarCommand defineVarCommand = DefineVarCommand();
+    Command* defineVarCommand2 = &defineVarCommand;
+    map.emplace(std::make_pair("var", defineVarCommand2));
+
+    SleepCommand sleepCommand = SleepCommand();
+    Command* sleepCommand2 = &sleepCommand;
+    map.emplace(std::make_pair("Sleep", sleepCommand2));
+
+    PrintCommand printCommand = PrintCommand();
+    Command* printCommand2 = &printCommand;
+    map.emplace(std::make_pair("Print", printCommand2));
+    // Initializing the vector
     vector<string> fileVector;
-    unordered_map<string, Command> map = initCommandMap();
     fileVector = lexer();
-    Command* c = &map.at("Sleep");
-    std::cout <<"here " << typeid(c).name() << '\n';
+
+    Command* c = map.at("Print");
+    std::cout <<"here 0 : " << typeid(c).name() << '\n';
+    int k= c->execute(fileVector,1);
+    (map.at("Sleep"))->execute(fileVector,1);
+    (map.at("var"))->execute(fileVector,1);
+    //(map.at("openDataServer"))->execute(fileVector,0);
     int i = 0;
 /*
     //Command* c {map.at("OpenDataServer")};
@@ -381,15 +311,15 @@ int main() {
     //std::cout << typeid(c1).name() << '\n';
 
 */
-    if (c != NULL)
-        i += c->execute(fileVector, i);
+    //if (c != NULL)
+       // i += c->execute(fileVector, i);
 
 
-    OpenServerCommand *openServerCommand = new OpenServerCommand;
+    //OpenServerCommand *openServerCommand = new OpenServerCommand;
     //i += openServerCommand->execute(fileVector, i);
 
 
-    ConnectCommand *connectCommand = new ConnectCommand;
+    //ConnectCommand *connectCommand = new ConnectCommand;
     //connectCommand->execute(fileVector, i);
     // Noam Testing line 287 bkbkjbkjb
 
@@ -429,8 +359,8 @@ int main() {
 
     // Karin Testing line 323
 
-
-
+    //OpenServerCommand *openServerCommand1 = new OpenServerCommand;
+    //i += openServerCommand1->execute(fileVector, i);
 
 
 
