@@ -178,7 +178,7 @@ void runServer1(unsigned short portShort) {
         cout<<"Accepted Client"<<endl;
     }
 
-    close(socketfd); //closing the listening socket
+    close(socketfd); //closing the listening socket !
 
     //reading from client
     while(true) {
