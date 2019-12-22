@@ -189,6 +189,7 @@ int OpenServerCommand::execute(vector<string> vector, int index) {
     const char *portNum = port.c_str();
     unsigned short portShort = (unsigned short) strtoul(portNum, NULL, 0);
     std::thread threadServer(runServer, portShort);
+    // detach?
     threadServer.join();
     return 2;
 }
@@ -202,6 +203,7 @@ int DefineVarCommand::execute(vector<string> vector, int index) {
     cout << "var shit" << endl;
     return 2;
 }
+
 void openDataServerLexer(string line, string checkCom, int i, vector<string> *v1) {
     string port;
     //insert the relevant command into vector
@@ -381,23 +383,19 @@ vector<string> lexer() {
 int main() {
     // Initializing the <string,Command*> map
     unordered_map<string, Command*> map ;
-
+    // Adding the commands to the map
     OpenServerCommand openServerCommand = OpenServerCommand();
     Command* openServerCommand2 = &openServerCommand;
     map.emplace(std::make_pair("openDataServer", openServerCommand2));
-
     ConnectCommand connectCommand = ConnectCommand();
     Command* connectCommand2 = &connectCommand;
     map.emplace(std::make_pair("connectControlClient", connectCommand2));
-
     DefineVarCommand defineVarCommand = DefineVarCommand();
     Command* defineVarCommand2 = &defineVarCommand;
     map.emplace(std::make_pair("var", defineVarCommand2));
-
     SleepCommand sleepCommand = SleepCommand();
     Command* sleepCommand2 = &sleepCommand;
     map.emplace(std::make_pair("Sleep", sleepCommand2));
-
     PrintCommand printCommand = PrintCommand();
     Command* printCommand2 = &printCommand;
     map.emplace(std::make_pair("Print", printCommand2));
