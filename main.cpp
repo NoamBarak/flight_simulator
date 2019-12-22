@@ -394,6 +394,29 @@ vector<string> lexer() {
     return v1;
 }
 
+void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
+    int vecLen = fileVector.size();
+    int i = 0;
+    while (i < vecLen) {
+        //Command
+        if (map.find(fileVector[i]) != map.end()) {
+            Command *c = map.at(fileVector[i]);
+            // cout << "here !" << typeid(c).name() << "!" << endl;
+            i = i + c->execute(fileVector, i);
+        } else {
+            //loop or condition
+            if (fileVector[i].find("while") != string::npos || fileVector[i].find("if") != string::npos) {
+                //    cout << "here !" << fileVector[i] << "!" << endl;
+                break;
+
+            } else {
+                cout << "here !" << fileVector[i] << "!" << endl;
+                i = i + 3;
+            }
+        }
+    }
+}
+
 int main() {
     thread threads[2];
     // Initializing the <string,Command*> map
