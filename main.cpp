@@ -52,7 +52,7 @@ int ConnectCommand::execute(vector<string> vector, int index) {
 }
 
 // The server thread runs the server
-void runServer(unsigned short portShort) {
+void runServer1(unsigned short portShort) {
     /*// Creating socket
     int sockftd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockftd == -1) {
@@ -165,12 +165,17 @@ void runServer(unsigned short portShort) {
 
     // accepting a client
     sockaddr_in Caddress;
+    int addreslen = sizeof(Caddress);
     int client_socket = accept(socketfd, (struct sockaddr *)&Caddress,
                                (socklen_t*)&Caddress);
+/*    int client_socket = accept(socketfd, (struct sockaddr *)&Caddress,
+                               (socklen_t*)&addreslen);*/
 
     if (client_socket == -1) {
         std::cerr<<"Error accepting client"<<std::endl;
         exit (-4);
+    }else{
+        cout<<"Accepted Client"<<endl;
     }
 
     close(socketfd); //closing the listening socket
@@ -188,9 +193,18 @@ int OpenServerCommand::execute(vector<string> vector, int index) {
     string port = vector.at(index + 1);
     const char *portNum = port.c_str();
     unsigned short portShort = (unsigned short) strtoul(portNum, NULL, 0);
-    std::thread threadServer(runServer, portShort);
-    // detach?
-    threadServer.join();
+    //std::thread threadServer(runServer1, portShort);
+    //this->threads[0]=thread(&OpenServerCommand::runServer,this,port);
+
+    // detach / join ?
+    //this->threads[0]= thread((runServer, portShort));
+    //threadServer.join();
+    //this->threads[0].join();
+
+    /*std::thread threadServer(runServer1, portShort);
+    threadServer.join();*/
+    this->threads[0] = std::thread (runServer1, portShort);
+    cout<<"created thread"<<endl;
     return 2;
 }
 
@@ -381,10 +395,11 @@ vector<string> lexer() {
 }
 
 int main() {
+    thread threads[2];
     // Initializing the <string,Command*> map
     unordered_map<string, Command*> map ;
     // Adding the commands to the map
-    OpenServerCommand openServerCommand = OpenServerCommand();
+    OpenServerCommand openServerCommand = OpenServerCommand(threads);
     Command* openServerCommand2 = &openServerCommand;
     map.emplace(std::make_pair("openDataServer", openServerCommand2));
     ConnectCommand connectCommand = ConnectCommand();
@@ -408,7 +423,9 @@ int main() {
     int k= c->execute(fileVector,1);
     (map.at("Sleep"))->execute(fileVector,1);
     (map.at("var"))->execute(fileVector,1);
-    //(map.at("openDataServer"))->execute(fileVector,0);
+    (map.at("openDataServer"))->execute(fileVector,0);
+    threads[0].join();
+    //(map.at("Sleeping"))->execute(fileVector,0);
     int i = 0;
 /*
     //Command* c {map.at("OpenDataServer")};
@@ -421,8 +438,8 @@ int main() {
        // i += c->execute(fileVector, i);
 
 
-    //OpenServerCommand *openServerCommand = new OpenServerCommand;
-    //i += openServerCommand->execute(fileVector, i);
+    //OpenServerCommand *openServerCommand3 = new OpenServerCommand;
+    //i += openServerCommand3->execute(fileVector, i);
 
 
     //ConnectCommand *connectCommand = new ConnectCommand;

@@ -6,12 +6,18 @@
 #define ADVANCEDE3_FLIGHTSIM_H
 
 #include "Command.h"
+#include <thread>
 class SleepCommand : public Command {
 public:
     int virtual execute(vector<string> vector,int index) override;
 };
 class OpenServerCommand : public Command {
+private:
+    thread* threads;
 public:
+    OpenServerCommand(thread* threads1){
+        this->threads = threads1;
+    }
     int virtual execute(vector<string> vector,int index) override ;
 };
 
