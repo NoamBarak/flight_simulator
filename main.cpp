@@ -450,24 +450,8 @@ int main() {
     threads[0].join();
     //(map.at("Sleeping"))->execute(fileVector,0);
     int i = 0;
-/*
-    //Command* c {map.at("OpenDataServer")};
-    std::cout << "in main - " << typeid(c).name() << '\n';
-    //Command& c = map.at("Sleep");
-    //std::cout << typeid(c1).name() << '\n';
 
-*/
-    //if (c != NULL)
-       // i += c->execute(fileVector, i);
-
-
-    //OpenServerCommand *openServerCommand3 = new OpenServerCommand;
-    //i += openServerCommand3->execute(fileVector, i);
-
-
-    //ConnectCommand *connectCommand = new ConnectCommand;
-    //connectCommand->execute(fileVector, i);
-    // Noam Testing line 287 bkbkjbkjb
+    // Noam Testing line 287
 
 
 
