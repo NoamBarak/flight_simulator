@@ -1,6 +1,4 @@
-//
-// Created by noam on 22/12/2019.
-//
+
 //
 // Created by noam on 11/11/2019.
 //
@@ -59,7 +57,7 @@ Expression *Interpreter::interpret(string st) {
         }
         lastIndex = isOp(st.at(i));
     }
-    if (!checkParen(st))
+    if(!checkParen(st))
         throw ("illegal math expression");
     //split st according to operators
     int stLength2 = st.length();
