@@ -1,6 +1,9 @@
 #include <iostream>
 #include "Command.h"
 #include "flightsim.h"
+#include "ex1.h"
+#include "ex1.cpp"
+#include "Interpreter.cpp"
 #include <unordered_map>
 #include <vector>
 #include <fstream>
