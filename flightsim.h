@@ -39,4 +39,24 @@ class PrintCommand : public Command {
 public:
     int execute(vector<string> vector, int index) override;
 };
+
+class IfCommand : public Command {
+private:
+    unordered_map<string, Command *> map;
+public:
+    int execute(vector<string> vector, int index) override;
+};
+
+class WhileCommand : public Command {
+private:
+    unordered_map<string, Command *> map;
+public:
+    int execute(vector<string> vector, int index) override;
+};
+
+class AssignVarCommand : public Command {
+public:
+    int execute(vector<string> vector, int index) override;
+};
+
 #endif //ADVANCEDE3_FLIGHTSIM_H

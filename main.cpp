@@ -55,13 +55,14 @@ double convStringToNum(vector<string> vector, int index) {
     if (checkIfNum) {
         ans = stod(st);
     }
+    return ans;
 }
 
 int SleepCommand::execute(vector<string> vector, int index) {
     cout << "Sleeping ..." << endl;
     double ans = convStringToNum(vector, index + 1);
-    // cout << "COM-" << vector.at(index) << ",  VAL-" << ans << endl;
-    return 2;
+    cout << "COM-" << vector.at(index) << ",  VAL-" << ans << endl;
+    return index + 2;
 }
 
 void runClient(const char *ip, unsigned short portShort) {
@@ -96,8 +97,8 @@ int ConnectCommand::execute(vector<string> vector, int index) {
     string address = vector.at(index + 1);
     //value of port
     double ans = convStringToNum(vector, index + 2);
-    //cout << "COM-" << vector.at(index) << ",  AD-" << address << ",  VAL-" << ans << endl;
-    return 3;
+    cout << "COM-" << vector.at(index) << ",  AD-" << address << ",  VAL-" << ans << endl;
+    return index + 3;
 }
 
 // The server thread runs the server
@@ -249,15 +250,15 @@ int OpenServerCommand::execute(vector<string> vector, int index) {
 
     //value of port
     double ans = convStringToNum(vector, index + 1);
-    // cout << "COM-" << vector.at(index) << ",  VAL-" << ans << endl;
-    return 2;
+    cout << "COM-" << vector.at(index) << ",  VAL-" << ans << endl;
+    return index + 2;
 }
 
 int PrintCommand::execute(vector<string> vector, int index) {
     cout << "Printing ..." << endl;
     string output = vector[index + 1];
-    //cout << "COM-" << vector.at(index) << ",  OUTPUT-" << output << endl;
-    return 2;
+    cout << "COM-" << vector.at(index) << ",  OUTPUT-" << output << endl;
+    return index + 2;
 }
 
 int DefineVarCommand::execute(vector<string> vector, int index) {
@@ -270,14 +271,14 @@ int DefineVarCommand::execute(vector<string> vector, int index) {
     if (vector[index + 2] == "->" || vector[index + 2] == "<-") {
         sim = vector[index + 3];//always "sim"
         address = vector[index + 4];
-        // cout << "COM-" << vector.at(index) << ",  NAME-" << nameOfVar <<
-        //      ",  SIGN-" << arrowOrEq << ",  SIM-" << sim << ",  AD-" << address << endl;
-        return 5;
+        cout << "COM-" << vector.at(index) << ",  NAME-" << nameOfVar <<
+             ",  SIGN-" << arrowOrEq << ",  SIM-" << sim << ",  AD-" << address << endl;
+        return index + 5;
     }
     // value= convStringToNum(vector,index+4);
-    //  cout << "COM-" << vector.at(index) << ",  NAME-" << nameOfVar <<
-    //      ",  SIGN-" << arrowOrEq << ",  VAL-" << value << endl;
-    return 4;
+    cout << "COM-" << vector.at(index) << ",  NAME-" << nameOfVar <<
+         ",  SIGN-" << arrowOrEq << ",  VAL-" << value << endl;
+    return index + 4;
 }
 
 int otherCasesCommand(vector<string> vector, int index) {
@@ -290,8 +291,8 @@ int otherCasesCommand(vector<string> vector, int index) {
     return 3;
 }
 
-int LoopOrCondCommand(vector<string> vector, int index, unordered_map<string, Command *> map) {
-    string whileOrIf = vector[index];
+int IfCommand::execute(vector<string> vector, int index) {
+    string ifCom = vector[index];//always "if"
     string cond = vector[index + 1];
     string leftParen = vector[index + 2];
     index = index + 3;
@@ -305,6 +306,27 @@ int LoopOrCondCommand(vector<string> vector, int index, unordered_map<string, Co
         }
     }
     return index + 1;
+}
+
+int WhileCommand::execute(vector<string> vector, int index) {
+    string whileCom = vector[index]; //always "while"
+    string cond = vector[index + 1];
+    string leftParen = vector[index + 2];
+    index = index + 3;
+    while (vector[index] != "}") {
+        //Command
+        if (map.find(vector[index]) != map.end()) {
+            Command *c = map.at(vector[index]);
+            index = index + c->execute(vector, index);
+        } else {
+            index = index + otherCasesCommand(vector, index);
+        }
+    }
+    return index + 1;
+}
+
+int LoopOrCondCommand(vector<string> vector, int index, unordered_map<string, Command *> map) {
+
 }
 
 void openDataServerLexer(string line, string checkCom, int i, vector<string> *v1) {
@@ -489,7 +511,7 @@ void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
         if (map.find(fileVector[i]) != map.end()) {
             Command *c = map.at(fileVector[i]);
             //cout << "here !" << fileVector[i] << "!" << endl;
-            i = i + c->execute(fileVector, i);
+            i = c->execute(fileVector, i);
         } else {
             //loop or condition
             if (fileVector[i].find("while") != string::npos || fileVector[i].find("if") != string::npos) {
