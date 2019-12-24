@@ -1,21 +1,21 @@
 #include <iostream>
 #include "Command.h"
 #include "flightsim.h"
+#include "VarInfo.cpp"
 #include "ex1.h"
 #include "ex1.cpp"
 #include "Interpreter.cpp"
 #include <vector>
 #include <fstream>
 #include <string>
-#include <cstring>
-#include <bits/unique_ptr.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <thread>
-#include <map>
-
+unordered_map<string, VarInfo> ToClient;
+unordered_map<string, VarInfo> fromServer;
+queue<string> updateOrder;
 //using namespace std;
 double convStringToNum(vector<string> vector, int index) {
     double ans;
