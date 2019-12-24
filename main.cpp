@@ -4,7 +4,6 @@
 #include "ex1.h"
 #include "ex1.cpp"
 #include "Interpreter.cpp"
-#include <unordered_map>
 #include <vector>
 #include <fstream>
 #include <string>
@@ -16,10 +15,52 @@
 #include <unistd.h>
 #include <thread>
 #include <map>
+
 //using namespace std;
+double convStringToNum(vector<string> vector, int index) {
+    double ans;
+    string st;
+    st = vector.at(index);
+    bool checkIfNum = true;
+    //check if the string is a number or expression
+    // if expression- do interpreter
+    //if number- do stod
+    for (int j = 0; j < st.length(); j++) {
+        if (!isdigit(st[j])) {
+            //not a number!
+            if (st.at(j) != '.') {
+                Interpreter *i = new Interpreter();
+                Expression *e = nullptr;
+                try {
+
+                    e = i->interpret(st);
+                    ans = e->calculate();
+                    delete e;
+                    delete i;
+
+                } catch (const char *e) {
+                    if (e != nullptr) {
+                        delete e;
+                    }
+                    if (i != nullptr) {
+                        delete i;
+                    }
+                    std::cout << e << std::endl;
+                }
+                checkIfNum = false;
+                break;
+            }
+        }
+    }
+    if (checkIfNum) {
+        ans = stod(st);
+    }
+}
 
 int SleepCommand::execute(vector<string> vector, int index) {
     cout << "Sleeping ..." << endl;
+    double ans = convStringToNum(vector, index + 1);
+    // cout << "COM-" << vector.at(index) << ",  VAL-" << ans << endl;
     return 2;
 }
 
@@ -49,8 +90,13 @@ int ConnectCommand::execute(vector<string> vector, int index) {
     string port = vector.at(index + 2);
     const char *portNum = port.c_str();
     unsigned short portShort = (unsigned short) strtoul(portNum, NULL, 0);
-    //  std::thread threadClient(runClient, ip, portShort);!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // threadClient.detach();!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //std::thread threadClient(runClient, ip, portShort);
+    //threadClient.detach();
+
+    string address = vector.at(index + 1);
+    //value of port
+    double ans = convStringToNum(vector, index + 2);
+    //cout << "COM-" << vector.at(index) << ",  AD-" << address << ",  VAL-" << ans << endl;
     return 3;
 }
 
@@ -198,30 +244,67 @@ int OpenServerCommand::execute(vector<string> vector, int index) {
 
     /*std::thread threadServer(runServer1, portShort);
     threadServer.join();*/
-    //  this->threads[0] = std::thread (runServer1, portShort);!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // cout<<"created thread"<<endl;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    this->threads[0] = std::thread(runServer1, portShort);
+    cout << "created thread" << endl;
+
+    //value of port
+    double ans = convStringToNum(vector, index + 1);
+    // cout << "COM-" << vector.at(index) << ",  VAL-" << ans << endl;
     return 2;
 }
 
 int PrintCommand::execute(vector<string> vector, int index) {
     cout << "Printing ..." << endl;
+    string output = vector[index + 1];
+    //cout << "COM-" << vector.at(index) << ",  OUTPUT-" << output << endl;
     return 2;
 }
 
 int DefineVarCommand::execute(vector<string> vector, int index) {
     cout << "var shit" << endl;
-    if (vector[index+2]=="->" || vector[index+2]=="<-")
-         return 5;
+    string nameOfVar, arrowOrEq, sim, address;
+    double value = 0;
+    nameOfVar = vector[index + 1];
+    arrowOrEq = vector[index + 2];
+
+    if (vector[index + 2] == "->" || vector[index + 2] == "<-") {
+        sim = vector[index + 3];//always "sim"
+        address = vector[index + 4];
+        // cout << "COM-" << vector.at(index) << ",  NAME-" << nameOfVar <<
+        //      ",  SIGN-" << arrowOrEq << ",  SIM-" << sim << ",  AD-" << address << endl;
+        return 5;
+    }
+    // value= convStringToNum(vector,index+4);
+    //  cout << "COM-" << vector.at(index) << ",  NAME-" << nameOfVar <<
+    //      ",  SIGN-" << arrowOrEq << ",  VAL-" << value << endl;
     return 4;
 }
 
-int LoopOrCond (vector<string> vector, int index){
-    while (vector[index]!="}") {
-        cout<<vector[index]<<" , ";
-        index++;
+int otherCasesCommand(vector<string> vector, int index) {
+    string nameOfVar = vector[index];
+    string eqSign = vector[index + 1];//always "="
+    //value of var
+    //  double ans = convStringToNum(vector, index + 2);
+    double ans = 0;
+    //  cout << "VAR-" << vector.at(index) << ",  SIGN-" << eqSign <<",  VAL-" << ans << endl;
+    return 3;
+}
+
+int LoopOrCondCommand(vector<string> vector, int index, unordered_map<string, Command *> map) {
+    string whileOrIf = vector[index];
+    string cond = vector[index + 1];
+    string leftParen = vector[index + 2];
+    index = index + 3;
+    while (vector[index] != "}") {
+        //Command
+        if (map.find(vector[index]) != map.end()) {
+            Command *c = map.at(vector[index]);
+            index = index + c->execute(vector, index);
+        } else {
+            index = index + otherCasesCommand(vector, index);
+        }
     }
-    cout<<"}"<<endl;
-    return index+1;
+    return index + 1;
 }
 
 void openDataServerLexer(string line, string checkCom, int i, vector<string> *v1) {
@@ -411,12 +494,12 @@ void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
             //loop or condition
             if (fileVector[i].find("while") != string::npos || fileVector[i].find("if") != string::npos) {
                 //cout << "here !" << fileVector[i] << "!" << endl;
-                i= LoopOrCond(fileVector,i);
+                i = LoopOrCondCommand(fileVector, i, map);
 
 
             } else {
-                cout << "here !" << fileVector[i] << "!" << endl;
-                i = i + 3;
+                //  cout << "here !" << fileVector[i] << "!" << endl;
+                i = i + otherCasesCommand(fileVector, i);
             }
         }
     }
@@ -449,17 +532,17 @@ int main() {
     Command *c = map.at("Print");
     std::cout << "here 0 : " << typeid(c).name() << '\n';
     int k = c->execute(fileVector, 1);
-    (map.at("Sleep"))->execute(fileVector, 1);
-    (map.at("var"))->execute(fileVector, 1);
-    (map.at("openDataServer"))->execute(fileVector, 0);
-    //  threads[0].join();!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //   (map.at("Sleep"))->execute(fileVector, 1);
+    //   (map.at("var"))->execute(fileVector, 1);
+    //   (map.at("openDataServer"))->execute(fileVector, 0);
+
     //(map.at("Sleeping"))->execute(fileVector,0);
     int i = 0;
 
     // Noam Testing line 287
 
 
-
+    cout << "---------------NOAM--------------- " << endl;
     parser(map, fileVector);
 
 
@@ -529,6 +612,6 @@ int main() {
     // End of Karin Testing 357
 
 
-
+    threads[0].join();
     return 0;
 }
