@@ -253,9 +253,8 @@ int AssignVarCommand::execute(vector<string> vector, int index) {
     string nameOfVar = vector[index];
     string eqSign = vector[index + 1];//always "="
     //value of var
-    double ans = convStringToNum(vector, index + 2);
-
-    //double ans = 0;
+    // double ans = convStringToNum(vector, index + 2);
+    double ans = 0;
     cout << "VAR-" << vector.at(index) << ",  SIGN-" << eqSign << ",  VAL-" << ans << endl;
     return index + 3;
 }
@@ -319,10 +318,6 @@ int DefineVarCommand::execute(vector<string> vector, int index) {
     return index + 4;
 }
 
-int LoopOrCondCommand(vector<string> vector, int index, unordered_map<string, Command *> map) {
-
-}
-
 int IfCommand::execute(vector<string> vector, int index) {
     cout << "If Command" << endl;
     string ifCom = vector[index];//always "if"
@@ -365,12 +360,29 @@ int WhileCommand::execute(vector<string> vector, int index) {
 void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
     int vecLen = fileVector.size();
     int i = 0;
+    bool beforeDefineVarCom = false;
+    bool afterDefineVarCom = false;
     while (i < vecLen) {
         //Command
         if (map.find(fileVector[i]) != map.end()) {
             Command *c = map.at(fileVector[i]);
             //cout << "here !" << fileVector[i] << "!" << endl;
+            if (fileVector[i] == "var") {
+                if (!beforeDefineVarCom) {
+                    //this is the first DefineVar command
+                    beforeDefineVarCom = true;
+                    cout << "!!!!!!!!!!!!!!" << fileVector[i + 1] << "!!!!!!!!!!!!" << endl;
+                }
+            }
+
             i = c->execute(fileVector, i);
+            if (fileVector[i] != "var" && !afterDefineVarCom) {
+                if (beforeDefineVarCom) {
+                    //this is the first command after DefineVar
+                    afterDefineVarCom = true;
+                    cout << "------------" << fileVector[i] << "----------" << endl;
+                }
+            }
         }
             /*else {
                 //loop or condition
