@@ -2,22 +2,16 @@
 #include "Command.h"
 #include "flightsim.h"
 #include "VarInfo.cpp"
+#include "Lexer.cpp"
+#include "Commands.cpp"
 #include "ex1.h"
 #include "ex1.cpp"
 #include "Interpreter.cpp"
-#include <vector>
-#include <fstream>
-#include <string>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <thread>
+
 unordered_map<string, VarInfo> ToClient;
 unordered_map<string, VarInfo> fromServer;
 queue<string> updateOrder;
-//using namespace std;
-double convStringToNum(vector<string> vector, int index) {
+/*double convStringToNum(vector<string> vector, int index) {
     double ans;
     string st;
     st = vector.at(index);
@@ -56,9 +50,8 @@ double convStringToNum(vector<string> vector, int index) {
         ans = stod(st);
     }
     return ans;
-}
-
-int SleepCommand::execute(vector<string> vector, int index) {
+}*/
+/*int SleepCommand::execute(vector<string> vector, int index) {
     cout << "Sleeping ..." << endl;
     double ans = convStringToNum(vector, index + 1);
     cout << "COM-" << vector.at(index) << ",  VAL-" << ans << endl;
@@ -103,76 +96,6 @@ int ConnectCommand::execute(vector<string> vector, int index) {
 
 // The server thread runs the server
 void runServer1(unsigned short portShort) {
-    /*// Creating socket
-    int sockftd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockftd == -1) {
-        std::cerr << "Could not create a socket" << endl;
-        exit(-1);
-    }
-    sockaddr_in address;
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(portShort);
-    // Binding
-    if (bind(sockftd, (struct sockaddr *) &address, sizeof(address)) == -1) {
-        std::cerr << "Could not bind socket to IP" << endl;
-        exit(-2);
-    }
-    // Making the socket listen to the port
-    if (listen(sockftd, 5) == -1) {
-        std::cerr << "Error in listening command" << endl;
-        exit(-3);
-    }
-    // Accepting the client
-    int client_socket = accept(sockftd, (struct sockaddr *) &address,
-                               (socklen_t *) &address);
-    if (client_socket == -1) {
-        std::cerr << "Error in accepting client" << endl;
-        exit(-4);
-    }*/
-    /*//create socket
-    int socketfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (socketfd == -1) {
-        //error
-        std::cerr << "Could not create a socket" << std::endl;
-        exit(-1);
-    }
-    //bind socket to IP address
-    // we first need to create the sockaddr obj.
-    sockaddr_in address; //in means IP4
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY; //give me any IP allocated for my machine
-    address.sin_port = htons(portShort);
-    //we need to convert our number
-    // to a number that the network understands.
-    //the actual bind command
-    if (bind(socketfd, (struct sockaddr *) &address, sizeof(address)) == -1) {
-        std::cerr << "Could not bind the socket to an IP" << std::endl;
-        exit(-2);
-    }
-    //making socket listen to the port
-    if (listen(socketfd, 5) == -1) { //can also set to SOMAXCON (max connections)
-        std::cerr << "Error during listening command" << std::endl;
-        exit(-3);
-    } else {
-        std::cout << "Server is now listening ..." << std::endl;
-    }
-    // accepting a client
-    sockaddr_in Caddress;
-    int client_socket = accept(socketfd, (struct sockaddr *) &Caddress,
-                               (socklen_t *) &Caddress);
-    if (client_socket == -1) {
-        std::cerr << "Error accepting client" << std::endl;
-        exit(-4);
-    }else
-        cout<<"Accepted client"<<endl;
-    close(socketfd); //closing the listening socket
-    //reading from client
-    while (true) {
-        char buffer[1024] = {0};
-        int valread = read(client_socket, buffer, 1024);
-        std::cout << buffer << std::endl;
-    }*/
     //create socket
     int socketfd = socket(AF_INET, SOCK_STREAM, 0);
     if (socketfd == -1) {
@@ -210,8 +133,6 @@ void runServer1(unsigned short portShort) {
     int addreslen = sizeof(Caddress);
     int client_socket = accept(socketfd, (struct sockaddr *) &Caddress,
                                (socklen_t *) &Caddress);
-/*    int client_socket = accept(socketfd, (struct sockaddr *)&Caddress,
-                               (socklen_t*)&addreslen);*/
 
     if (client_socket == -1) {
         std::cerr << "Error accepting client" << std::endl;
@@ -243,8 +164,8 @@ int OpenServerCommand::execute(vector<string> vector, int index) {
     //threadServer.join();
     //this->threads[0].join();
 
-    /*std::thread threadServer(runServer1, portShort);
-    threadServer.join();*/
+    //std::thread threadServer(runServer1, portShort);
+    //threadServer.join();
     this->threads[0] = std::thread(runServer1, portShort);
     cout << "created thread" << endl;
 
@@ -280,8 +201,8 @@ int DefineVarCommand::execute(vector<string> vector, int index) {
          ",  SIGN-" << arrowOrEq << ",  VAL-" << value << endl;
     return index + 4;
 }
-
-int otherCasesCommand(vector<string> vector, int index) {
+*/
+/*int otherCasesCommand(vector<string> vector, int index) {
     string nameOfVar = vector[index];
     string eqSign = vector[index + 1];//always "="
     //value of var
@@ -289,8 +210,8 @@ int otherCasesCommand(vector<string> vector, int index) {
     double ans = 0;
     //  cout << "VAR-" << vector.at(index) << ",  SIGN-" << eqSign <<",  VAL-" << ans << endl;
     return 3;
-}
-
+}*/
+/*
 int IfCommand::execute(vector<string> vector, int index) {
     string ifCom = vector[index];//always "if"
     string cond = vector[index + 1];
@@ -323,13 +244,11 @@ int WhileCommand::execute(vector<string> vector, int index) {
         }
     }
     return index + 1;
-}
+}*/
+/*int LoopOrCondCommand(vector<string> vector, int index, unordered_map<string, Command *> map) {
 
-int LoopOrCondCommand(vector<string> vector, int index, unordered_map<string, Command *> map) {
-
-}
-
-void openDataServerLexer(string line, string checkCom, int i, vector<string> *v1) {
+}*/
+/*void openDataServerLexer(string line, string checkCom, int i, vector<string> *v1) {
     string port;
     //insert the relevant command into vector
     v1->push_back(checkCom);
@@ -501,9 +420,8 @@ vector<string> lexer() {
     }
     file.close();
     return v1;
-}
-
-void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
+}*/
+/*void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
     int vecLen = fileVector.size();
     int i = 0;
     while (i < vecLen) {
@@ -525,7 +443,7 @@ void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
             }
         }
     }
-}
+}*/
 
 int main() {
     thread threads[2];
@@ -553,7 +471,7 @@ int main() {
 
     Command *c = map.at("Print");
     std::cout << "here 0 : " << typeid(c).name() << '\n';
-    int k = c->execute(fileVector, 1);
+    //int k = c->execute(fileVector, 1);
     //   (map.at("Sleep"))->execute(fileVector, 1);
     //   (map.at("var"))->execute(fileVector, 1);
     //   (map.at("openDataServer"))->execute(fileVector, 0);

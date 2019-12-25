@@ -8,7 +8,14 @@
 #include "Command.h"
 #include <thread>
 #include <unordered_map>
-
+#include <vector>
+#include <fstream>
+#include <string>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <thread>
 class SleepCommand : public Command {
 public:
     int virtual execute(vector<string> vector, int index) override;
