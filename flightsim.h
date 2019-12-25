@@ -18,6 +18,7 @@
 #include <thread>
 #include <vector>
 #include <queue>
+#include <mutex>
 #include "map"
 
 class SleepCommand : public Command {

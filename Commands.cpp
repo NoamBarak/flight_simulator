@@ -7,6 +7,8 @@
 extern unordered_map<string, VarInfo> toClient;
 extern unordered_map<string, VarInfo> fromServer;
 extern queue<string> updateOrder;
+extern bool firstVarInput;
+std::mutex mutex_lock;
 
 double convStringToNum(vector<string> vector, int index) {
     double ans;
@@ -92,78 +94,87 @@ int ConnectCommand::execute(vector<string> vector, int index) {
     return index + 3;
 }
 
+void initXML(string *xmlArr) {
+    string xmlOrder[36];
+    xmlOrder[0] = "/instrumentation/airspeed-indicator/indicated-speed-kt";
+    xmlOrder[1] = "/sim/time/warp";
+    xmlOrder[2] = "/controls/switches/magnetos";
+    xmlOrder[3] = "//instrumentation/heading-indicator/offset-deg";
+    xmlOrder[4] = "/instrumentation/altimeter/indicated-altitude-ft";
+    xmlOrder[5] = "/instrumentation/altimeter/pressure-alt-ft";
+    xmlOrder[6] = "/instrumentation/attitude-indicator/indicated-pitch-deg";
+    xmlOrder[7] = "/instrumentation/attitude-indicator/indicated-roll-deg";
+    xmlOrder[8] = "/instrumentation/attitude-indicator/internal-pitch-deg";
+    xmlOrder[9] = "/instrumentation/attitude-indicator/internal-roll-deg";
+    xmlOrder[10] = "/instrumentation/encoder/indicated-altitude-ft";
+    xmlOrder[11] = "/instrumentation/encoder/pressure-alt-ft";
+    xmlOrder[12] = "/instrumentation/gps/indicated-altitude-ft";
+    xmlOrder[13] = "/instrumentation/gps/indicated-ground-speed-kt";
+    xmlOrder[14] = "/instrumentation/gps/indicated-vertical-speed";
+    xmlOrder[15] = "/instrumentation/heading-indicator/indicated-heading-deg";
+    xmlOrder[16] = "/instrumentation/magnetic-compass/indicated-heading-deg";
+    xmlOrder[17] = "/instrumentation/slip-skid-ball/indicated-slip-skid";
+    xmlOrder[18] = "/instrumentation/turn-indicator/indicated-turn-rate";
+    xmlOrder[19] = "/instrumentation/vertical-speed-indicator/indicated-speed-fpm";
+    xmlOrder[20] = "/controls/flight/aileron";
+    xmlOrder[21] = "/controls/flight/elevator";
+    xmlOrder[22] = "/controls/flight/rudder";
+    xmlOrder[23] = "/controls/flight/flaps";
+    xmlOrder[24] = "/controls/engines/engine/throttle";
+    xmlOrder[25] = "/controls/engines/current-engine/throttle";
+    xmlOrder[26] = "/controls/switches/master-avionics";
+    xmlOrder[27] = "/controls/switches/starter";
+    xmlOrder[28] = "/engines/active-engine/auto-start";
+    xmlOrder[29] = "/controls/flight/speedbrake";
+    xmlOrder[30] = "/sim/model/c172p/brake-parking";
+    xmlOrder[31] = "/controls/engines/engine/primer";
+    xmlOrder[32] = "/controls/engines/current-engine/mixture";
+    xmlOrder[33] = "/controls/switches/master-bat";
+    xmlOrder[34] = "/controls/switches/master-alt";
+    xmlOrder[35] = "/engines/engine/rpm";
+    xmlArr = xmlOrder;
+}
+
 // The server thread runs the server
 void runServer1(unsigned short portShort) {
-    /*// Creating socket
-    int sockftd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockftd == -1) {
-        std::cerr << "Could not create a socket" << endl;
-        exit(-1);
-    }
-    sockaddr_in address;
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(portShort);
-    // Binding
-    if (bind(sockftd, (struct sockaddr *) &address, sizeof(address)) == -1) {
-        std::cerr << "Could not bind socket to IP" << endl;
-        exit(-2);
-    }
-    // Making the socket listen to the port
-    if (listen(sockftd, 5) == -1) {
-        std::cerr << "Error in listening command" << endl;
-        exit(-3);
-    }
-    // Accepting the client
-    int client_socket = accept(sockftd, (struct sockaddr *) &address,
-                               (socklen_t *) &address);
-    if (client_socket == -1) {
-        std::cerr << "Error in accepting client" << endl;
-        exit(-4);
-    }*/
-    /*//create socket
-    int socketfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (socketfd == -1) {
-        //error
-        std::cerr << "Could not create a socket" << std::endl;
-        exit(-1);
-    }
-    //bind socket to IP address
-    // we first need to create the sockaddr obj.
-    sockaddr_in address; //in means IP4
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY; //give me any IP allocated for my machine
-    address.sin_port = htons(portShort);
-    //we need to convert our number
-    // to a number that the network understands.
-    //the actual bind command
-    if (bind(socketfd, (struct sockaddr *) &address, sizeof(address)) == -1) {
-        std::cerr << "Could not bind the socket to an IP" << std::endl;
-        exit(-2);
-    }
-    //making socket listen to the port
-    if (listen(socketfd, 5) == -1) { //can also set to SOMAXCON (max connections)
-        std::cerr << "Error during listening command" << std::endl;
-        exit(-3);
-    } else {
-        std::cout << "Server is now listening ..." << std::endl;
-    }
-    // accepting a client
-    sockaddr_in Caddress;
-    int client_socket = accept(socketfd, (struct sockaddr *) &Caddress,
-                               (socklen_t *) &Caddress);
-    if (client_socket == -1) {
-        std::cerr << "Error accepting client" << std::endl;
-        exit(-4);
-    }else
-        cout<<"Accepted client"<<endl;
-    close(socketfd); //closing the listening socket
-    //reading from client
-    while (true) {
-        char buffer[1024] = {0};
-        int valread = read(client_socket, buffer, 1024);
-        std::cout << buffer << std::endl;
-    }*/
+    string xmlOrder[36];
+    xmlOrder[0] = "/instrumentation/airspeed-indicator/indicated-speed-kt";
+    xmlOrder[1] = "/sim/time/warp";
+    xmlOrder[2] = "/controls/switches/magnetos";
+    xmlOrder[3] = "//instrumentation/heading-indicator/offset-deg";
+    xmlOrder[4] = "/instrumentation/altimeter/indicated-altitude-ft";
+    xmlOrder[5] = "/instrumentation/altimeter/pressure-alt-ft";
+    xmlOrder[6] = "/instrumentation/attitude-indicator/indicated-pitch-deg";
+    xmlOrder[7] = "/instrumentation/attitude-indicator/indicated-roll-deg";
+    xmlOrder[8] = "/instrumentation/attitude-indicator/internal-pitch-deg";
+    xmlOrder[9] = "/instrumentation/attitude-indicator/internal-roll-deg";
+    xmlOrder[10] = "/instrumentation/encoder/indicated-altitude-ft";
+    xmlOrder[11] = "/instrumentation/encoder/pressure-alt-ft";
+    xmlOrder[12] = "/instrumentation/gps/indicated-altitude-ft";
+    xmlOrder[13] = "/instrumentation/gps/indicated-ground-speed-kt";
+    xmlOrder[14] = "/instrumentation/gps/indicated-vertical-speed";
+    xmlOrder[15] = "/instrumentation/heading-indicator/indicated-heading-deg";
+    xmlOrder[16] = "/instrumentation/magnetic-compass/indicated-heading-deg";
+    xmlOrder[17] = "/instrumentation/slip-skid-ball/indicated-slip-skid";
+    xmlOrder[18] = "/instrumentation/turn-indicator/indicated-turn-rate";
+    xmlOrder[19] = "/instrumentation/vertical-speed-indicator/indicated-speed-fpm";
+    xmlOrder[20] = "/controls/flight/aileron";
+    xmlOrder[21] = "/controls/flight/elevator";
+    xmlOrder[22] = "/controls/flight/rudder";
+    xmlOrder[23] = "/controls/flight/flaps";
+    xmlOrder[24] = "/controls/engines/engine/throttle";
+    xmlOrder[25] = "/controls/engines/current-engine/throttle";
+    xmlOrder[26] = "/controls/switches/master-avionics";
+    xmlOrder[27] = "/controls/switches/starter";
+    xmlOrder[28] = "/engines/active-engine/auto-start";
+    xmlOrder[29] = "/controls/flight/speedbrake";
+    xmlOrder[30] = "/sim/model/c172p/brake-parking";
+    xmlOrder[31] = "/controls/engines/engine/primer";
+    xmlOrder[32] = "/controls/engines/current-engine/mixture";
+    xmlOrder[33] = "/controls/switches/master-bat";
+    xmlOrder[34] = "/controls/switches/master-alt";
+    xmlOrder[35] = "/engines/engine/rpm";
+
     //create socket
     int socketfd = socket(AF_INET, SOCK_STREAM, 0);
     if (socketfd == -1) {
@@ -217,7 +228,23 @@ void runServer1(unsigned short portShort) {
     while (true) {
         char buffer[1024] = {0};
         int valread = read(client_socket, buffer, 1024);
-        std::cout << buffer << std::endl;
+        string a = buffer;
+        std::cout << a << std::endl;
+        // Noam part HERE!
+        if (!fromServer.empty() && firstVarInput) {
+            mutex_lock.lock();
+            for (auto &it: fromServer) {
+                for (int i = 0; i < 35; i++) {
+                    if (it.second.getSim() == xmlOrder[i])
+                        break;
+                }
+
+                cout << "\tVar name :" << it.first << endl;
+            }
+
+
+            mutex_lock.unlock();
+        }
     }
 }
 
@@ -226,8 +253,9 @@ int AssignVarCommand::execute(vector<string> vector, int index) {
     string nameOfVar = vector[index];
     string eqSign = vector[index + 1];//always "="
     //value of var
-   // double ans = convStringToNum(vector, index + 2);
-     double ans = 0;
+    double ans = convStringToNum(vector, index + 2);
+
+    //double ans = 0;
     cout << "VAR-" << vector.at(index) << ",  SIGN-" << eqSign << ",  VAL-" << ans << endl;
     return index + 3;
 }

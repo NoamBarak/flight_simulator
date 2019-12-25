@@ -11,6 +11,7 @@
 unordered_map<string, VarInfo> toClient;
 unordered_map<string, VarInfo> fromServer;
 queue<string> updateOrder;
+bool firstVarInput = false;
 /*double convStringToNum(vector<string> vector, int index) {
     double ans;
     string st;

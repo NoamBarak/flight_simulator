@@ -17,6 +17,9 @@ public:
         this->sim = sim1;
         this->direction = dir;
     }
+    string getSim(){
+        return this->sim;
+    }
 
     void setValue(double value1) {
         this->value = value1;
