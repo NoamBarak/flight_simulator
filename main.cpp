@@ -475,6 +475,7 @@ int main() {
     vector<string> fileVector;
     fileVector = lexer();
 
+
     Command *c = map.at("while");
     //c->execute(fileVector,0);
     //std::cout << "here 0 : " << typeid(c).name() << '\n';
