@@ -8,7 +8,7 @@
 #include "ex1.cpp"
 #include "Interpreter.cpp"
 
-unordered_map<string, VarInfo> ToClient;
+unordered_map<string, VarInfo> toClient;
 unordered_map<string, VarInfo> fromServer;
 queue<string> updateOrder;
 /*double convStringToNum(vector<string> vector, int index) {
@@ -465,26 +465,41 @@ int main() {
     PrintCommand printCommand = PrintCommand();
     Command *printCommand2 = &printCommand;
     map.emplace(std::make_pair("Print", printCommand2));
+    WhileCommand whileCommand = WhileCommand(map);
+    Command *whileCommand2 = &whileCommand;
+    map.emplace(std::make_pair("while", whileCommand2));
+    IfCommand ifCommand = IfCommand(map);
+    Command *ifCommand2 = &ifCommand;
+    map.emplace(std::make_pair("if", ifCommand2));
     // Initializing the vector
     vector<string> fileVector;
     fileVector = lexer();
 
-    Command *c = map.at("Print");
-    std::cout << "here 0 : " << typeid(c).name() << '\n';
+    Command *c = map.at("while");
+    //c->execute(fileVector,0);
+    //std::cout << "here 0 : " << typeid(c).name() << '\n';
+
     //int k = c->execute(fileVector, 1);
     //   (map.at("Sleep"))->execute(fileVector, 1);
     //   (map.at("var"))->execute(fileVector, 1);
     //   (map.at("openDataServer"))->execute(fileVector, 0);
-
     //(map.at("Sleeping"))->execute(fileVector,0);
-    int i = 0;
-
     // Noam Testing line 287
 
 
     cout << "---------------NOAM--------------- " << endl;
     parser(map, fileVector);
-
+    cout << "---------------Karin--------------- " << endl;
+    cout<<"to client map (->):"<<endl;
+    for (auto& it: toClient) {
+        // Do stuff
+        cout << "\tVar name :"<< it.first<<endl;
+    }
+    cout<<"from server map (<-):"<<endl;
+    for (auto& it: fromServer) {
+        // Do stuff
+        cout << "\tVar name :"<< it.first<<endl;
+    }
 
 
 

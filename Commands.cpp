@@ -4,6 +4,10 @@
 #include "flightsim.h"
 #include "Interpreter.h"
 
+extern unordered_map<string, VarInfo> toClient;
+extern unordered_map<string, VarInfo> fromServer;
+extern queue<string> updateOrder;
+
 double convStringToNum(vector<string> vector, int index) {
     double ans;
     string st;
@@ -270,6 +274,14 @@ int DefineVarCommand::execute(vector<string> vector, int index) {
         address = vector[index + 4];
         cout << "COM-" << vector.at(index) << ",  NAME-" << nameOfVar <<
              ",  SIGN-" << arrowOrEq << ",  SIM-" << sim << ",  AD-" << address << endl;
+        // Adding the variable to the map
+        VarInfo varInfo = VarInfo(nameOfVar, address, vector[index + 2]);
+        if (vector[index + 2] == "->") {
+            //map.emplace(std::make_pair("openDataServer", openServerCommand2));
+            toClient.emplace(std::make_pair(nameOfVar, varInfo));
+        } else if (vector[index + 2] == "<-") {
+            fromServer.emplace(std::make_pair(nameOfVar, varInfo));
+        }
         return index + 5;
     }
     // value= convStringToNum(vector,index+4);
@@ -283,6 +295,7 @@ int LoopOrCondCommand(vector<string> vector, int index, unordered_map<string, Co
 }
 
 int IfCommand::execute(vector<string> vector, int index) {
+    cout << "If Command" << endl;
     string ifCom = vector[index];//always "if"
     string cond = vector[index + 1];
     string leftParen = vector[index + 2];
@@ -300,6 +313,7 @@ int IfCommand::execute(vector<string> vector, int index) {
 }
 
 int WhileCommand::execute(vector<string> vector, int index) {
+    cout << "While Command" << endl;
     string whileCom = vector[index]; //always "while"
     string cond = vector[index + 1];
     string leftParen = vector[index + 2];

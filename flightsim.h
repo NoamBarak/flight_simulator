@@ -16,6 +16,10 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <thread>
+#include <vector>
+#include <queue>
+#include "map"
+
 class SleepCommand : public Command {
 public:
     int virtual execute(vector<string> vector, int index) override;
@@ -51,6 +55,10 @@ class IfCommand : public Command {
 private:
     unordered_map<string, Command *> map;
 public:
+    IfCommand(unordered_map<string, Command *> map1) {
+        this->map = map1;
+    }
+
     int execute(vector<string> vector, int index) override;
 };
 
@@ -58,6 +66,10 @@ class WhileCommand : public Command {
 private:
     unordered_map<string, Command *> map;
 public:
+    WhileCommand(unordered_map<string, Command *> map1) {
+        this->map = map1;
+    }
+
     int execute(vector<string> vector, int index) override;
 };
 

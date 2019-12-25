@@ -7,9 +7,8 @@
 
 #include <iostream>
 #include "ex1.h"
-#include <vector>
-#include <queue>
-#include "map"
+#include "flightsim.h"
+
 
 class Interpreter {
 private:
