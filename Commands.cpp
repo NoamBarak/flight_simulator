@@ -221,14 +221,15 @@ void runServer1(unsigned short portShort) {
     }
 }
 
-int otherCasesCommand(vector<string> vector, int index) {
+int AssignVarCommand::execute(vector<string> vector, int index) {
+    cout << "assigning var ... " << endl;
     string nameOfVar = vector[index];
     string eqSign = vector[index + 1];//always "="
     //value of var
-    //  double ans = convStringToNum(vector, index + 2);
-    double ans = 0;
-    //  cout << "VAR-" << vector.at(index) << ",  SIGN-" << eqSign <<",  VAL-" << ans << endl;
-    return 3;
+   // double ans = convStringToNum(vector, index + 2);
+     double ans = 0;
+    cout << "VAR-" << vector.at(index) << ",  SIGN-" << eqSign << ",  VAL-" << ans << endl;
+    return index + 3;
 }
 
 int OpenServerCommand::execute(vector<string> vector, int index) {
@@ -304,9 +305,11 @@ int IfCommand::execute(vector<string> vector, int index) {
         //Command
         if (map.find(vector[index]) != map.end()) {
             Command *c = map.at(vector[index]);
-            index = index + c->execute(vector, index);
+            index = c->execute(vector, index);
         } else {
-            index = index + otherCasesCommand(vector, index);
+            AssignVarCommand assignVarCommand = AssignVarCommand();
+            index = assignVarCommand.execute(vector, index);
+
         }
     }
     return index + 1;
@@ -322,9 +325,10 @@ int WhileCommand::execute(vector<string> vector, int index) {
         //Command
         if (map.find(vector[index]) != map.end()) {
             Command *c = map.at(vector[index]);
-            index = index + c->execute(vector, index);
+            index = c->execute(vector, index);
         } else {
-            index = index + otherCasesCommand(vector, index);
+            AssignVarCommand assignVarCommand = AssignVarCommand();
+            index = assignVarCommand.execute(vector, index);
         }
     }
     return index + 1;
@@ -339,17 +343,20 @@ void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
             Command *c = map.at(fileVector[i]);
             //cout << "here !" << fileVector[i] << "!" << endl;
             i = c->execute(fileVector, i);
-        } else {
-            //loop or condition
-            if (fileVector[i].find("while") != string::npos || fileVector[i].find("if") != string::npos) {
-                //cout << "here !" << fileVector[i] << "!" << endl;
-                i = LoopOrCondCommand(fileVector, i, map);
+        }
+            /*else {
+                //loop or condition
+                if (fileVector[i].find("while") != string::npos || fileVector[i].find("if") != string::npos) {
+                    //cout << "here !" << fileVector[i] << "!" << endl;
+                    i = LoopOrCondCommand(fileVector, i, map);
 
 
-            } else {
-                //  cout << "here !" << fileVector[i] << "!" << endl;
-                i = i + otherCasesCommand(fileVector, i);
-            }
+                }*/
+        else {
+            //  cout << "here !" << fileVector[i] << "!" << endl;
+            AssignVarCommand assignVarCommand = AssignVarCommand();
+            i = assignVarCommand.execute(fileVector, i);
         }
     }
 }
+
