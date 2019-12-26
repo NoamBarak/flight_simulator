@@ -39,7 +39,13 @@ public:
 };
 
 class ConnectCommand : public Command {
+private:
+    thread *threads;
 public:
+    ConnectCommand(thread *thread1) {
+        this->threads = thread1;
+    }
+
     int virtual execute(vector<string> vector, int index) override;
 };
 

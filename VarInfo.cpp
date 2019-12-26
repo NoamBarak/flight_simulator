@@ -19,13 +19,18 @@ public:
         this->sim = sim1;
         this->direction = dir;
     }
-    VarInfo(string name1){
+
+    VarInfo(string name1) {
         // var name = val
         this->name = name1;
     }
 
     string getSim() {
         return this->sim;
+    }
+
+    double getValue() {
+        return this->value;
     }
 
     void setValue(double value1) {

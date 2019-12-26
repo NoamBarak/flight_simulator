@@ -94,47 +94,6 @@ int ConnectCommand::execute(vector<string> vector, int index) {
     return index + 3;
 }
 
-void initXML(string *xmlArr) {
-    string xmlOrder[36];
-    xmlOrder[0] = "/instrumentation/airspeed-indicator/indicated-speed-kt";
-    xmlOrder[1] = "/sim/time/warp";
-    xmlOrder[2] = "/controls/switches/magnetos";
-    xmlOrder[3] = "//instrumentation/heading-indicator/offset-deg";
-    xmlOrder[4] = "/instrumentation/altimeter/indicated-altitude-ft";
-    xmlOrder[5] = "/instrumentation/altimeter/pressure-alt-ft";
-    xmlOrder[6] = "/instrumentation/attitude-indicator/indicated-pitch-deg";
-    xmlOrder[7] = "/instrumentation/attitude-indicator/indicated-roll-deg";
-    xmlOrder[8] = "/instrumentation/attitude-indicator/internal-pitch-deg";
-    xmlOrder[9] = "/instrumentation/attitude-indicator/internal-roll-deg";
-    xmlOrder[10] = "/instrumentation/encoder/indicated-altitude-ft";
-    xmlOrder[11] = "/instrumentation/encoder/pressure-alt-ft";
-    xmlOrder[12] = "/instrumentation/gps/indicated-altitude-ft";
-    xmlOrder[13] = "/instrumentation/gps/indicated-ground-speed-kt";
-    xmlOrder[14] = "/instrumentation/gps/indicated-vertical-speed";
-    xmlOrder[15] = "/instrumentation/heading-indicator/indicated-heading-deg";
-    xmlOrder[16] = "/instrumentation/magnetic-compass/indicated-heading-deg";
-    xmlOrder[17] = "/instrumentation/slip-skid-ball/indicated-slip-skid";
-    xmlOrder[18] = "/instrumentation/turn-indicator/indicated-turn-rate";
-    xmlOrder[19] = "/instrumentation/vertical-speed-indicator/indicated-speed-fpm";
-    xmlOrder[20] = "/controls/flight/aileron";
-    xmlOrder[21] = "/controls/flight/elevator";
-    xmlOrder[22] = "/controls/flight/rudder";
-    xmlOrder[23] = "/controls/flight/flaps";
-    xmlOrder[24] = "/controls/engines/engine/throttle";
-    xmlOrder[25] = "/controls/engines/current-engine/throttle";
-    xmlOrder[26] = "/controls/switches/master-avionics";
-    xmlOrder[27] = "/controls/switches/starter";
-    xmlOrder[28] = "/engines/active-engine/auto-start";
-    xmlOrder[29] = "/controls/flight/speedbrake";
-    xmlOrder[30] = "/sim/model/c172p/brake-parking";
-    xmlOrder[31] = "/controls/engines/engine/primer";
-    xmlOrder[32] = "/controls/engines/current-engine/mixture";
-    xmlOrder[33] = "/controls/switches/master-bat";
-    xmlOrder[34] = "/controls/switches/master-alt";
-    xmlOrder[35] = "/engines/engine/rpm";
-    xmlArr = xmlOrder;
-}
-
 unordered_map<string, int> initXMl() {
     unordered_map<string, int> map;
     map.emplace(std::make_pair("/instrumentation/airspeed-indicator/indicated-speed-kt", 0));
@@ -177,7 +136,7 @@ unordered_map<string, int> initXMl() {
 }
 
 // The server thread runs the server
-void runServer1(unsigned short portShort) {
+void runServer(unsigned short portShort) {
     unordered_map<string, int> map = initXMl();
     /*xmlOrder[0] = "/instrumentation/airspeed-indicator/indicated-speed-kt";
     xmlOrder[1] = "/sim/time/warp";
@@ -289,24 +248,32 @@ void runServer1(unsigned short portShort) {
 
             if (!fromServer.empty() && firstVarInput) {
                 mutex_lock.lock();
+                cout << "First" << endl;
                 for (auto &it: fromServer) {
                     string sim = it.second.getSim();
                     string add = sim.substr(1, sim.length() - 2);
                     int index = map.at(add);
                     it.second.setValue(stod(vector.at(index)));
                     cout << "\tVar name :" << it.first << " " << stod(vector.at(index)) << endl;
+                    // Print Check for the queue
                 }
+
                 mutex_lock.unlock();
                 firstVarInput = false;
             }
             mutex_lock.lock();
+            cout << "Second" << endl;
             for (auto &it: fromServer) {
                 string sim = it.second.getSim();
                 string add = sim.substr(1, sim.length() - 2);
                 int index = map.at(add);
                 it.second.setValue(stod(vector.at(index)));
-                cout << "\tVar name :" << it.first << " " << stod(vector.at(index)) << endl;
+                cout << "\tVar name :" << it.first << " " << it.second.getValue() << endl;
             }
+            /*cout << "Interpreter map Variables: " << endl;
+            for (auto &it: interpreter.getVariables()) {
+                cout << "Name: "<<it.first << ", Val: " << it.second<<endl;
+            }*/
             mutex_lock.unlock();
         }
     }
@@ -315,34 +282,34 @@ void runServer1(unsigned short portShort) {
 int AssignVarCommand::execute(vector<string> vector, int index) {
     cout << "assigning var ... " << endl;
     string nameOfVar = vector[index];
+    cout<<"Name of Var: "<<nameOfVar<<endl;
     string eqSign = vector[index + 1];//always "="
     //value of var
     double ans = convStringToNum(vector, index + 2);
-    //double ans = 0;
+    // if the var is in the -> map
+    if (toClient.find(nameOfVar)!= toClient.end())
+        toClient.at(nameOfVar).setValue(ans);
+    else {
+        // if the var is not in the map, meaning its a var that doesnt belong to any map
+        VarInfo varInfo = VarInfo(nameOfVar);
+        varInfo.setValue(ans);
+    }
     cout << "VAR-" << vector.at(index) << ",  SIGN-" << eqSign << ",  VAL-" << ans << endl;
     return index + 3;
 }
 
 int OpenServerCommand::execute(vector<string> vector, int index) {
     cout << "Opening Server ..." << endl;
-    string port = vector.at(index + 1);
+    //string port = vector.at(index + 1);
+    double ans = convStringToNum(vector, index + 1);
+    string port = std::to_string(ans);
     const char *portNum = port.c_str();
     unsigned short portShort = (unsigned short) strtoul(portNum, NULL, 0);
-    //std::thread threadServer(runServer1, portShort);
-    //this->threads[0]=thread(&OpenServerCommand::runServer,this,port);
-
-    // detach / join ?
-    //this->threads[0]= thread((runServer, portShort));
-    //threadServer.join();
-    //this->threads[0].join();
-
-    /*std::thread threadServer(runServer1, portShort);
-    threadServer.join();*/
-    this->threads[0] = std::thread(runServer1, portShort);
+    this->threads[0] = std::thread(runServer, portShort);
     cout << "created thread" << endl;
 
     //value of port
-    double ans = convStringToNum(vector, index + 1);
+
     cout << "COM-" << vector.at(index) << ",  VAL-" << ans << endl;
     return index + 2;
 }

@@ -455,7 +455,7 @@ int main() {
     OpenServerCommand openServerCommand = OpenServerCommand(threads);
     Command *openServerCommand2 = &openServerCommand;
     map.emplace(std::make_pair("openDataServer", openServerCommand2));
-    ConnectCommand connectCommand = ConnectCommand();
+    ConnectCommand connectCommand = ConnectCommand(threads);
     Command *connectCommand2 = &connectCommand;
     map.emplace(std::make_pair("connectControlClient", connectCommand2));
     DefineVarCommand defineVarCommand = DefineVarCommand();
@@ -495,15 +495,29 @@ int main() {
     parser(map, fileVector);
 
     cout << "---------------Karin--------------- " << endl;
+    this_thread::sleep_for(std::chrono::microseconds(8000));
     cout << "to client map (->):" << endl;
     for (auto &it: toClient) {
         // Do stuff
-        cout << "\tVar name :" << it.first << endl;
+        //cout << "\tVar name :" << it.first <<endl;
+        // ההדפסה בשורה הבאה מסוכנת, יכולה לעשות שגיאה - תלוי בזמן ריצה של הת'רדים
+        cout << "\tVar name :" << it.first << ", Val: "<< it.second.getValue()<<endl;
     }
     cout << "from server map (<-):" << endl;
+
     for (auto &it: fromServer) {
         // Do stuff
-        cout << "\tVar name :" << it.first << endl;
+        cout << "\tVar name :" << it.first << ", Val: "<< it.second.getValue()<<endl;
+    }
+    cout << "Interpreter map Variables: " << endl;
+    for (auto &it: interpreter.getVariables()) {
+        cout << "\tName: "<<it.first << ", Val: " << it.second<<endl;
+    }
+    // Print Check for the queue
+    cout<<"Queue Check:"<<endl;
+    while(!updateOrder.empty()){
+        cout<<"\t "<<updateOrder.front()<<", Val: "<< toClient.at(updateOrder.front()).getValue()<<endl;
+        updateOrder.pop();
     }
 
 
