@@ -1,3 +1,4 @@
+/*
 
 //
 // Created by noam on 11/11/2019.
@@ -290,4 +291,4 @@ bool Interpreter::isNumber(const std::string &st) {
         i++;
     }
     return true;
-}
+}*/

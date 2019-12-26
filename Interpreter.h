@@ -1,3 +1,4 @@
+/*
 //
 // Created by noam on 11/11/2019.
 //
@@ -36,4 +37,4 @@ public:
 };
 
 
-#endif //UNTITLED1_INTERPRETER_H
+#endif //UNTITLED1_INTERPRETER_H*/

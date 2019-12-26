@@ -2,7 +2,7 @@
 // Created by karin on 25/12/2019.
 //
 #include "flightsim.h"
-#include "Interpreter.h"
+#include "ex1.h"
 
 extern unordered_map<string, VarInfo> toClient;
 extern unordered_map<string, VarInfo> fromServer;
@@ -23,22 +23,21 @@ double convStringToNum(vector<string> vector, int index) {
         if (!isdigit(st[j])) {
             //not a number!
             if (st.at(j) != '.') {
-                Interpreter *i = new Interpreter();
+                //Interpreter *i = new Interpreter();
                 Expression *e = nullptr;
                 try {
-
-                    e = i->interpret(st);
+                    e = interpreter.interpret(st);
                     ans = e->calculate();
                     delete e;
-                    delete i;
+                    //delete i;
 
                 } catch (const char *e) {
                     if (e != nullptr) {
                         delete e;
                     }
-                    if (i != nullptr) {
-                        delete i;
-                    }
+//                    if (i != nullptr) {
+//                        delete i;
+//                    }
                     std::cout << e << std::endl;
                 }
                 checkIfNum = false;
@@ -135,7 +134,8 @@ void initXML(string *xmlArr) {
     xmlOrder[35] = "/engines/engine/rpm";
     xmlArr = xmlOrder;
 }
-unordered_map<string, int> initXMl(){
+
+unordered_map<string, int> initXMl() {
     unordered_map<string, int> map;
     map.emplace(std::make_pair("/instrumentation/airspeed-indicator/indicated-speed-kt", 0));
     map.emplace(std::make_pair("/sim/time/warp", 1));
@@ -175,9 +175,10 @@ unordered_map<string, int> initXMl(){
     map.emplace(std::make_pair("/engines/engine/rpm", 35));
     return map;
 }
+
 // The server thread runs the server
 void runServer1(unsigned short portShort) {
-    unordered_map<string, int> map =  initXMl();
+    unordered_map<string, int> map = initXMl();
     /*xmlOrder[0] = "/instrumentation/airspeed-indicator/indicated-speed-kt";
     xmlOrder[1] = "/sim/time/warp";
     xmlOrder[2] = "/controls/switches/magnetos";
@@ -284,7 +285,6 @@ void runServer1(unsigned short portShort) {
         if (vector.size() > 1) {
             for (int i = 0; i < vector.size(); i++) {
                 std::cout << vector.at(i) << ' ';
-                std::cout << vector.size() << ' ';
             }
 
             if (!fromServer.empty() && firstVarInput) {
@@ -317,8 +317,8 @@ int AssignVarCommand::execute(vector<string> vector, int index) {
     string nameOfVar = vector[index];
     string eqSign = vector[index + 1];//always "="
     //value of var
-    // double ans = convStringToNum(vector, index + 2);
-    double ans = 0;
+    double ans = convStringToNum(vector, index + 2);
+    //double ans = 0;
     cout << "VAR-" << vector.at(index) << ",  SIGN-" << eqSign << ",  VAL-" << ans << endl;
     return index + 3;
 }
@@ -376,9 +376,11 @@ int DefineVarCommand::execute(vector<string> vector, int index) {
         }
         return index + 5;
     }
-    // value= convStringToNum(vector,index+4);
+    value = convStringToNum(vector, index + 3);
     cout << "COM-" << vector.at(index) << ",  NAME-" << nameOfVar <<
          ",  SIGN-" << arrowOrEq << ",  VAL-" << value << endl;
+    VarInfo varInfo1 = VarInfo(nameOfVar);
+    varInfo1.setValue(value);
     return index + 4;
 }
 
@@ -446,7 +448,7 @@ void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
                         //this is the first command after DefineVar
                         afterDefineVarCom = true;
                         firstVarInput = afterDefineVarCom;
-                        while(firstVarInput){
+                        while (firstVarInput) {
                             std::this_thread::sleep_for(std::chrono::microseconds(1000));
                         }
                         cout << "------------" << fileVector[i] << "----------" << endl;
