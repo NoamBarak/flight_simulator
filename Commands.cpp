@@ -7,6 +7,7 @@
 extern unordered_map<string, VarInfo> toClient;
 extern unordered_map<string, VarInfo> fromServer;
 extern queue<string> updateOrder;
+extern Interpreter interpreter;
 extern bool firstVarInput;
 std::mutex mutex_lock;
 
@@ -134,11 +135,50 @@ void initXML(string *xmlArr) {
     xmlOrder[35] = "/engines/engine/rpm";
     xmlArr = xmlOrder;
 }
-
+unordered_map<string, int> initXMl(){
+    unordered_map<string, int> map;
+    map.emplace(std::make_pair("/instrumentation/airspeed-indicator/indicated-speed-kt", 0));
+    map.emplace(std::make_pair("/sim/time/warp", 1));
+    map.emplace(std::make_pair("/controls/switches/magnetos", 2));
+    map.emplace(std::make_pair("/instrumentation/heading-indicator/offset-deg", 3));
+    map.emplace(std::make_pair("/instrumentation/altimeter/indicated-altitude-ft", 4));
+    map.emplace(std::make_pair("/instrumentation/altimeter/pressure-alt-ft", 5));
+    map.emplace(std::make_pair("/instrumentation/attitude-indicator/indicated-pitch-deg", 6));
+    map.emplace(std::make_pair("/instrumentation/attitude-indicator/indicated-roll-deg", 7));
+    map.emplace(std::make_pair("/instrumentation/attitude-indicator/internal-pitch-deg", 8));
+    map.emplace(std::make_pair("/instrumentation/attitude-indicator/internal-roll-deg", 9));
+    map.emplace(std::make_pair("/instrumentation/encoder/indicated-altitude-ft", 10));
+    map.emplace(std::make_pair("/instrumentation/encoder/pressure-alt-ft", 11));
+    map.emplace(std::make_pair("/instrumentation/gps/indicated-altitude-ft", 12));
+    map.emplace(std::make_pair("/instrumentation/gps/indicated-ground-speed-kt", 13));
+    map.emplace(std::make_pair("/instrumentation/gps/indicated-vertical-speed", 14));
+    map.emplace(std::make_pair("/instrumentation/heading-indicator/indicated-heading-deg", 15));
+    map.emplace(std::make_pair("/instrumentation/magnetic-compass/indicated-heading-deg", 16));
+    map.emplace(std::make_pair("/instrumentation/slip-skid-ball/indicated-slip-skid", 17));
+    map.emplace(std::make_pair("/instrumentation/turn-indicator/indicated-turn-rate", 18));
+    map.emplace(std::make_pair("/instrumentation/vertical-speed-indicator/indicated-speed-fpm", 19));
+    map.emplace(std::make_pair("/controls/flight/aileron", 20));
+    map.emplace(std::make_pair("/controls/flight/elevator", 21));
+    map.emplace(std::make_pair("/controls/flight/rudder", 22));
+    map.emplace(std::make_pair("/controls/flight/flaps", 23));
+    map.emplace(std::make_pair("/controls/engines/engine/throttle", 24));
+    map.emplace(std::make_pair("/controls/engines/current-engine/throttle", 25));
+    map.emplace(std::make_pair("/controls/switches/master-avionics", 26));
+    map.emplace(std::make_pair("/controls/switches/starter", 27));
+    map.emplace(std::make_pair("/engines/active-engine/auto-start", 28));
+    map.emplace(std::make_pair("/controls/flight/speedbrake", 29));
+    map.emplace(std::make_pair("/sim/model/c172p/brake-parking", 30));
+    map.emplace(std::make_pair("/controls/engines/engine/primer", 31));
+    map.emplace(std::make_pair("/controls/engines/current-engine/mixture", 32));
+    map.emplace(std::make_pair("/controls/switches/master-bat", 33));
+    map.emplace(std::make_pair("/controls/switches/master-alt", 34));
+    map.emplace(std::make_pair("/engines/engine/rpm", 35));
+    return map;
+}
 // The server thread runs the server
 void runServer1(unsigned short portShort) {
-    string xmlOrder[36];
-    xmlOrder[0] = "/instrumentation/airspeed-indicator/indicated-speed-kt";
+    unordered_map<string, int> map =  initXMl();
+    /*xmlOrder[0] = "/instrumentation/airspeed-indicator/indicated-speed-kt";
     xmlOrder[1] = "/sim/time/warp";
     xmlOrder[2] = "/controls/switches/magnetos";
     xmlOrder[3] = "//instrumentation/heading-indicator/offset-deg";
@@ -173,7 +213,7 @@ void runServer1(unsigned short portShort) {
     xmlOrder[32] = "/controls/engines/current-engine/mixture";
     xmlOrder[33] = "/controls/switches/master-bat";
     xmlOrder[34] = "/controls/switches/master-alt";
-    xmlOrder[35] = "/engines/engine/rpm";
+    xmlOrder[35] = "/engines/engine/rpm";*/
 
     //create socket
     int socketfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -212,8 +252,6 @@ void runServer1(unsigned short portShort) {
     int addreslen = sizeof(Caddress);
     int client_socket = accept(socketfd, (struct sockaddr *) &Caddress,
                                (socklen_t *) &Caddress);
-/*    int client_socket = accept(socketfd, (struct sockaddr *)&Caddress,
-                               (socklen_t*)&addreslen);*/
 
     if (client_socket == -1) {
         std::cerr << "Error accepting client" << std::endl;
@@ -229,20 +267,46 @@ void runServer1(unsigned short portShort) {
         char buffer[1024] = {0};
         int valread = read(client_socket, buffer, 1024);
         string a = buffer;
-        std::cout << a << std::endl;
+        //std::cout << a << std::endl;
         // Noam part HERE!
-        if (!fromServer.empty() && firstVarInput) {
-            mutex_lock.lock();
-            for (auto &it: fromServer) {
-                for (int i = 0; i < 35; i++) {
-                    if (it.second.getSim() == xmlOrder[i])
-                        break;
-                }
-
-                cout << "\tVar name :" << it.first << endl;
+        vector<string> vector;
+        string st;
+        int last = 0;
+        int find = a.find_first_of(",", last);
+        while (find < a.length() && find != (-1)) {
+            st = a.substr(last, find - last - 1);
+            vector.push_back(st);
+            last = find + 1;
+            find = a.find_first_of(",", last);
+        }
+        st = a.substr(last);
+        vector.push_back(st);
+        if (vector.size() > 1) {
+            for (int i = 0; i < vector.size(); i++) {
+                std::cout << vector.at(i) << ' ';
+                std::cout << vector.size() << ' ';
             }
 
-
+            if (!fromServer.empty() && firstVarInput) {
+                mutex_lock.lock();
+                for (auto &it: fromServer) {
+                    string sim = it.second.getSim();
+                    string add = sim.substr(1, sim.length() - 2);
+                    int index = map.at(add);
+                    it.second.setValue(stod(vector.at(index)));
+                    cout << "\tVar name :" << it.first << " " << stod(vector.at(index)) << endl;
+                }
+                mutex_lock.unlock();
+                firstVarInput = false;
+            }
+            mutex_lock.lock();
+            for (auto &it: fromServer) {
+                string sim = it.second.getSim();
+                string add = sim.substr(1, sim.length() - 2);
+                int index = map.at(add);
+                it.second.setValue(stod(vector.at(index)));
+                cout << "\tVar name :" << it.first << " " << stod(vector.at(index)) << endl;
+            }
             mutex_lock.unlock();
         }
     }
@@ -376,11 +440,17 @@ void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
             }
 
             i = c->execute(fileVector, i);
-            if (fileVector[i] != "var" && !afterDefineVarCom) {
-                if (beforeDefineVarCom) {
-                    //this is the first command after DefineVar
-                    afterDefineVarCom = true;
-                    cout << "------------" << fileVector[i] << "----------" << endl;
+            if (i < vecLen) {
+                if (fileVector[i] != "var" && !afterDefineVarCom) {
+                    if (beforeDefineVarCom) {
+                        //this is the first command after DefineVar
+                        afterDefineVarCom = true;
+                        firstVarInput = afterDefineVarCom;
+                        while(firstVarInput){
+                            std::this_thread::sleep_for(std::chrono::microseconds(1000));
+                        }
+                        cout << "------------" << fileVector[i] << "----------" << endl;
+                    }
                 }
             }
         }

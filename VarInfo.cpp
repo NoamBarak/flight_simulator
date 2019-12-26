@@ -4,6 +4,7 @@
 #include "flightsim.h"
 
 extern queue<string> updateOrder;
+extern Interpreter interpreter;
 
 class VarInfo {
 private:
@@ -17,12 +18,16 @@ public:
         this->sim = sim1;
         this->direction = dir;
     }
-    string getSim(){
+
+    string getSim() {
         return this->sim;
     }
 
     void setValue(double value1) {
         this->value = value1;
+        string varAsString = std::to_string(value1);
+        string varAssign = this->name + "=" + varAsString;
+        interpreter.setVariables(varAssign);
         // if the direction is -> we need to update the simulator
         if (this->direction == "->") {
             updateOrder.push(this->name);

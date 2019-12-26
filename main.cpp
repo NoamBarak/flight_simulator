@@ -11,6 +11,7 @@
 unordered_map<string, VarInfo> toClient;
 unordered_map<string, VarInfo> fromServer;
 queue<string> updateOrder;
+Interpreter interpreter = Interpreter();
 bool firstVarInput = false;
 /*double convStringToNum(vector<string> vector, int index) {
     double ans;
@@ -490,18 +491,21 @@ int main() {
 
 
     cout << "---------------NOAM--------------- " << endl;
+
     parser(map, fileVector);
+
     cout << "---------------Karin--------------- " << endl;
-    cout<<"to client map (->):"<<endl;
-    for (auto& it: toClient) {
+    cout << "to client map (->):" << endl;
+    for (auto &it: toClient) {
         // Do stuff
-        cout << "\tVar name :"<< it.first<<endl;
+        cout << "\tVar name :" << it.first << endl;
     }
-    cout<<"from server map (<-):"<<endl;
-    for (auto& it: fromServer) {
+    cout << "from server map (<-):" << endl;
+    for (auto &it: fromServer) {
         // Do stuff
-        cout << "\tVar name :"<< it.first<<endl;
+        cout << "\tVar name :" << it.first << endl;
     }
+
 
 
 
