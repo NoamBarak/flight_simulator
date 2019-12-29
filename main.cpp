@@ -6,13 +6,446 @@
 #include "Commands.cpp"
 #include "ex1.h"
 #include "ex1.cpp"
+#include "Interpreter.cpp"
 
 unordered_map<string, VarInfo> toClient;
 unordered_map<string, VarInfo> fromServer;
 queue<string> updateOrder;
 Interpreter interpreter = Interpreter();
 bool firstVarInput = false;
-bool done = false;
+/*double convStringToNum(vector<string> vector, int index) {
+    double ans;
+    string st;
+    st = vector.at(index);
+    bool checkIfNum = true;
+    //check if the string is a number or expression
+    // if expression- do interpreter
+    //if number- do stod
+    for (int j = 0; j < st.length(); j++) {
+        if (!isdigit(st[j])) {
+            //not a number!
+            if (st.at(j) != '.') {
+                Interpreter *i = new Interpreter();
+                Expression *e = nullptr;
+                try {
+
+                    e = i->interpret(st);
+                    ans = e->calculate();
+                    delete e;
+                    delete i;
+
+                } catch (const char *e) {
+                    if (e != nullptr) {
+                        delete e;
+                    }
+                    if (i != nullptr) {
+                        delete i;
+                    }
+                    std::cout << e << std::endl;
+                }
+                checkIfNum = false;
+                break;
+            }
+        }
+    }
+    if (checkIfNum) {
+        ans = stod(st);
+    }
+    return ans;
+}*/
+/*int SleepCommand::execute(vector<string> vector, int index) {
+    cout << "Sleeping ..." << endl;
+    double ans = convStringToNum(vector, index + 1);
+    cout << "COM-" << vector.at(index) << ",  VAL-" << ans << endl;
+    return index + 2;
+}
+
+void runClient(const char *ip, unsigned short portShort) {
+    cout << "Client thread" << endl;
+    int client_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (client_socket == -1) {
+        std::cerr << "Could not create a socket" << endl;
+        exit(-1);
+    }
+    sockaddr_in address;
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = inet_addr(ip);
+    address.sin_port = htons(portShort);
+    int is_connected = connect(client_socket, (struct sockaddr *) &address, sizeof(address));
+    if (is_connected == -1) {
+        std::cerr << "Could not connect to host server" << endl;
+    } else {
+        cout << "Connected to server" << endl;
+    }
+}
+
+int ConnectCommand::execute(vector<string> vector, int index) {
+    cout << "Connecting ..." << endl;
+    string ipStr = vector.at(index + 1);
+    const char *ip = ipStr.c_str();
+    string port = vector.at(index + 2);
+    const char *portNum = port.c_str();
+    unsigned short portShort = (unsigned short) strtoul(portNum, NULL, 0);
+    //std::thread threadClient(runClient, ip, portShort);
+    //threadClient.detach();
+
+    string address = vector.at(index + 1);
+    //value of port
+    double ans = convStringToNum(vector, index + 2);
+    cout << "COM-" << vector.at(index) << ",  AD-" << address << ",  VAL-" << ans << endl;
+    return index + 3;
+}
+
+// The server thread runs the server
+void runServer1(unsigned short portShort) {
+    //create socket
+    int socketfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (socketfd == -1) {
+        //error
+        std::cerr << "Could not create a socket" << std::endl;
+        exit(-1);
+    }
+
+    //bind socket to IP address
+    // we first need to create the sockaddr obj.
+    sockaddr_in address; //in means IP4
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY; //give me any IP allocated for my machine
+    address.sin_port = htons(portShort);
+    //we need to convert our number
+    // to a number that the network understands.
+
+    //the actual bind command
+    if (bind(socketfd, (struct sockaddr *) &address, sizeof(address)) == -1) {
+        std::cerr << "Could not bind the socket to an IP" << std::endl;
+        exit(-2);
+    }
+
+    //making socket listen to the port
+
+    if (listen(socketfd, 5) == -1) { //can also set to SOMAXCON (max connections)
+        std::cerr << "Error during listening command" << std::endl;
+        exit(-3);
+    } else {
+        std::cout << "Server is now listening ..." << std::endl;
+    }
+
+    // accepting a client
+    sockaddr_in Caddress;
+    int addreslen = sizeof(Caddress);
+    int client_socket = accept(socketfd, (struct sockaddr *) &Caddress,
+                               (socklen_t *) &Caddress);
+
+    if (client_socket == -1) {
+        std::cerr << "Error accepting client" << std::endl;
+        exit(-4);
+    } else {
+        cout << "Accepted Client" << endl;
+    }
+
+    close(socketfd); //closing the listening socket !
+
+    //reading from client
+    while (true) {
+        char buffer[1024] = {0};
+        int valread = read(client_socket, buffer, 1024);
+        std::cout << buffer << std::endl;
+    }
+}
+
+int OpenServerCommand::execute(vector<string> vector, int index) {
+    cout << "Opening Server ..." << endl;
+    string port = vector.at(index + 1);
+    const char *portNum = port.c_str();
+    unsigned short portShort = (unsigned short) strtoul(portNum, NULL, 0);
+    //std::thread threadServer(runServer1, portShort);
+    //this->threads[0]=thread(&OpenServerCommand::runServer,this,port);
+
+    // detach / join ?
+    //this->threads[0]= thread((runServer, portShort));
+    //threadServer.join();
+    //this->threads[0].join();
+
+    //std::thread threadServer(runServer1, portShort);
+    //threadServer.join();
+    this->threads[0] = std::thread(runServer1, portShort);
+    cout << "created thread" << endl;
+
+    //value of port
+    double ans = convStringToNum(vector, index + 1);
+    cout << "COM-" << vector.at(index) << ",  VAL-" << ans << endl;
+    return index + 2;
+}
+
+int PrintCommand::execute(vector<string> vector, int index) {
+    cout << "Printing ..." << endl;
+    string output = vector[index + 1];
+    cout << "COM-" << vector.at(index) << ",  OUTPUT-" << output << endl;
+    return index + 2;
+}
+
+int DefineVarCommand::execute(vector<string> vector, int index) {
+    cout << "var shit" << endl;
+    string nameOfVar, arrowOrEq, sim, address;
+    double value = 0;
+    nameOfVar = vector[index + 1];
+    arrowOrEq = vector[index + 2];
+
+    if (vector[index + 2] == "->" || vector[index + 2] == "<-") {
+        sim = vector[index + 3];//always "sim"
+        address = vector[index + 4];
+        cout << "COM-" << vector.at(index) << ",  NAME-" << nameOfVar <<
+             ",  SIGN-" << arrowOrEq << ",  SIM-" << sim << ",  AD-" << address << endl;
+        return index + 5;
+    }
+    // value= convStringToNum(vector,index+4);
+    cout << "COM-" << vector.at(index) << ",  NAME-" << nameOfVar <<
+         ",  SIGN-" << arrowOrEq << ",  VAL-" << value << endl;
+    return index + 4;
+}
+*/
+/*int otherCasesCommand(vector<string> vector, int index) {
+    string nameOfVar = vector[index];
+    string eqSign = vector[index + 1];//always "="
+    //value of var
+    //  double ans = convStringToNum(vector, index + 2);
+    double ans = 0;
+    //  cout << "VAR-" << vector.at(index) << ",  SIGN-" << eqSign <<",  VAL-" << ans << endl;
+    return 3;
+}*/
+/*
+int IfCommand::execute(vector<string> vector, int index) {
+    string ifCom = vector[index];//always "if"
+    string cond = vector[index + 1];
+    string leftParen = vector[index + 2];
+    index = index + 3;
+    while (vector[index] != "}") {
+        //Command
+        if (map.find(vector[index]) != map.end()) {
+            Command *c = map.at(vector[index]);
+            index = index + c->execute(vector, index);
+        } else {
+            index = index + otherCasesCommand(vector, index);
+        }
+    }
+    return index + 1;
+}
+
+int WhileCommand::execute(vector<string> vector, int index) {
+    string whileCom = vector[index]; //always "while"
+    string cond = vector[index + 1];
+    string leftParen = vector[index + 2];
+    index = index + 3;
+    while (vector[index] != "}") {
+        //Command
+        if (map.find(vector[index]) != map.end()) {
+            Command *c = map.at(vector[index]);
+            index = index + c->execute(vector, index);
+        } else {
+            index = index + otherCasesCommand(vector, index);
+        }
+    }
+    return index + 1;
+}*/
+/*int LoopOrCondCommand(vector<string> vector, int index, unordered_map<string, Command *> map) {
+
+}*/
+/*void openDataServerLexer(string line, string checkCom, int i, vector<string> *v1) {
+    string port;
+    //insert the relevant command into vector
+    v1->push_back(checkCom);
+    i = i + checkCom.length();
+    //insert the value into vector
+    //i+1, and line.length()-1-(i+1) because of the parentheses
+    port = line.substr(i + 1, line.length() - 1 - (i + 1));
+    v1->push_back(port);
+}
+
+void connectControlClientLexer(string line, string checkCom, vector<string> *v1) {
+    string address, value;
+    int saveFirst, saveSecond, saveComma;
+    int len = line.length();
+    saveFirst = line.find_first_of('"');
+    saveSecond = line.find_first_of('"', saveFirst + 1);
+    saveComma = line.find_first_of(",");
+    //insert the relevant command into vector
+    v1->push_back(checkCom);
+    //insert address into vector
+    v1->push_back(line.substr(saveFirst, saveSecond - saveFirst + 1));
+    //insert port into vector
+    v1->push_back(line.substr(saveComma + 1, len - saveComma - 2));
+}
+
+void printOrSleepLexer(string line, string checkCom, vector<string> *v1) {
+    int len = line.length();
+    int firstParen = line.find_first_of("(");
+    //insert the relevant command into vector
+    v1->push_back(checkCom);
+    //insert address into vector
+    v1->push_back(line.substr(firstParen + 1, len - firstParen - 2));
+}
+
+void varLexer(string line, string checkCom, vector<string> *v1, int i) {
+    int len = line.length();
+    i = i + checkCom.length() + 1;
+    int spaceBeforeArrow = line.find_first_of(" ", i);
+    int spaceAfterArrow = line.find_first_of(" ", spaceBeforeArrow + 1);
+    int arrowOrEq = line.find_first_of("(", spaceAfterArrow + 1);
+    string checkIfArrow = line.substr(spaceBeforeArrow + 1, spaceAfterArrow - spaceBeforeArrow - 1);
+    //insert the relevant command into vector
+    v1->push_back(checkCom);
+    //insert name of var into vector
+    v1->push_back(line.substr(i, spaceBeforeArrow - i));
+    //insert arrow or '=' into vector
+    v1->push_back(line.substr(spaceBeforeArrow + 1, spaceAfterArrow - spaceBeforeArrow - 1));
+    if (checkIfArrow.find("<") != -1 || checkIfArrow.find(">") != -1) {
+        //insert the word "sim"
+        v1->push_back(line.substr(spaceAfterArrow + 1, arrowOrEq - spaceAfterArrow - 1));
+        //insert address into vector
+        v1->push_back(line.substr(arrowOrEq + 1, len - arrowOrEq - 2));
+    } else {
+        int placeOfEq = line.find_first_of("=");
+        int spacePlace = line.find_first_of(" ", placeOfEq);
+        //insert the string after '='
+        v1->push_back(line.substr(spacePlace + 1));
+    }
+}
+
+void otherCasesLexer(string line, string checkCom, vector<string> *v1) {
+    int firstLetter = line.find_first_not_of("\t");
+    int eqSignPlace = line.find_first_of("=");
+    //insert name of var into vector
+    string str = (line.substr(firstLetter, eqSignPlace - firstLetter));
+    char lastPlace = str[str.length() - 1];
+    //there is a white space between the variable and '='
+    if (lastPlace == ' ') {
+        v1->push_back(line.substr(firstLetter, eqSignPlace - firstLetter - 1));
+    } else {
+        v1->push_back(line.substr(firstLetter, eqSignPlace - firstLetter));
+    }
+    v1->push_back("=");
+    int valueBegin = line.find_first_not_of(" ", eqSignPlace + 1);
+    str = line.substr(valueBegin);
+    v1->push_back(str);
+}
+
+//read file
+vector<string> lexer() {
+    string right = "->";
+    string check;
+    vector<string> v1;
+    int len;
+    vector<string> fileVector;
+    string line, checkCom;
+    ifstream file;
+    file.open("fly.txt");
+    if (!file.is_open()) {
+        cout << "Unable to open file\n" << endl;
+    } else {
+        while (!file.eof()) {
+            getline(file, line);
+            len = line.length();
+            for (int i = 0; i < len;) {
+                int firstLetter = line.find_first_not_of("\t");
+                checkCom = line.substr(firstLetter, 14);
+                //openDataServer command
+                if (checkCom == "openDataServer") {
+                    openDataServerLexer(line, checkCom, i, &v1);
+                    break;
+                }
+                checkCom = line.substr(firstLetter, 20);
+                //connectControlClient command
+                if (checkCom == "connectControlClient") {
+                    connectControlClientLexer(line, checkCom, &v1);
+                    break;
+                }
+                checkCom = line.substr(firstLetter, 5);
+                //Print or Sleep command
+                if (checkCom == "Print" || checkCom == "Sleep") {
+                    printOrSleepLexer(line, checkCom, &v1);
+                    break;
+                }
+                checkCom = line.substr(firstLetter, 3);
+                //defineVar command
+                if (checkCom == "var") {
+                    varLexer(line, checkCom, &v1, i);
+                    break;
+
+                }
+
+                //other cases
+                if (line.find("{") == -1) {
+                    otherCasesLexer(line, checkCom, &v1);
+                    break;
+                } else {
+                    //LOOP or CONDITION!
+                    int firstSpace = line.find_first_of(" ");
+                    int findParen = line.find_first_of("{");
+                    string cond = (line.substr(firstSpace + 1, findParen - firstSpace - 1));
+                    char lastPlace = cond[cond.length() - 1];
+                    //check if there is a white space at the end of the condition
+                    if (lastPlace == ' ') {
+                        cond = (line.substr(firstSpace + 1, findParen - firstSpace - 2));
+                    }
+                    //insert 'while' or 'if'
+                    v1.push_back(line.substr(0, firstSpace));
+                    //insert condition
+                    v1.push_back(cond);
+                    //insert '{'
+                    v1.push_back("{");
+                    getline(file, line);
+                    while (line.find("}") == -1) {
+                        firstLetter = line.find_first_not_of("\t");
+                        checkCom = line.substr(firstLetter, 5);
+                        //Print or Sleep command
+                        if (checkCom == "Print" || checkCom == "Sleep") {
+                            printOrSleepLexer(line, checkCom, &v1);
+                        } else {
+                            checkCom = line.substr(firstLetter, 3);
+                            //defineVar command
+                            if (checkCom == "var") {
+                                varLexer(line, checkCom, &v1, i);
+                            } else {
+                                if (line.find("{") == -1) {
+                                    otherCasesLexer(line, checkCom, &v1);
+                                }
+                            }
+                        }
+                        getline(file, line);
+                    }
+                    v1.push_back("}");
+                }
+                break;
+
+            }
+        }
+    }
+    file.close();
+    return v1;
+}*/
+/*void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
+    int vecLen = fileVector.size();
+    int i = 0;
+    while (i < vecLen) {
+        //Command
+        if (map.find(fileVector[i]) != map.end()) {
+            Command *c = map.at(fileVector[i]);
+            //cout << "here !" << fileVector[i] << "!" << endl;
+            i = c->execute(fileVector, i);
+        } else {
+            //loop or condition
+            if (fileVector[i].find("while") != string::npos || fileVector[i].find("if") != string::npos) {
+                //cout << "here !" << fileVector[i] << "!" << endl;
+                i = LoopOrCondCommand(fileVector, i, map);
+
+
+            } else {
+                //  cout << "here !" << fileVector[i] << "!" << endl;
+                i = i + otherCasesCommand(fileVector, i);
+            }
+        }
+    }
+}*/
 
 int main() {
     thread threads[2];
@@ -22,7 +455,7 @@ int main() {
     OpenServerCommand openServerCommand = OpenServerCommand(threads);
     Command *openServerCommand2 = &openServerCommand;
     map.emplace(std::make_pair("openDataServer", openServerCommand2));
-    ConnectCommand connectCommand = ConnectCommand(threads);
+    ConnectCommand connectCommand = ConnectCommand();
     Command *connectCommand2 = &connectCommand;
     map.emplace(std::make_pair("connectControlClient", connectCommand2));
     DefineVarCommand defineVarCommand = DefineVarCommand();
@@ -62,30 +495,20 @@ int main() {
     parser(map, fileVector);
 
     cout << "---------------Karin--------------- " << endl;
-    this_thread::sleep_for(std::chrono::microseconds(8000));
     cout << "to client map (->):" << endl;
     for (auto &it: toClient) {
         // Do stuff
-        //cout << "\tVar name :" << it.first <<endl;
-        // ההדפסה בשורה הבאה מסוכנת, יכולה לעשות שגיאה - תלוי בזמן ריצה של הת'רדים
-        cout << "\tVar name :" << it.first << ", Val: " << it.second.getValue() << endl;
+        cout << "\tVar name :" << it.first << endl;
     }
-    cout << "from server map (<-):" << endl;
-
-    for (auto &it: fromServer) {
+  //  cout << "from server map (<-):" << endl;
+  //  for (auto &it: fromServer) {
         // Do stuff
-        cout << "\tVar name :" << it.first << ", Val: " << it.second.getValue() << endl;
-    }
-    cout << "Interpreter map Variables: " << endl;
-    for (auto &it: interpreter.getVariables()) {
-        cout << "\tName: " << it.first << ", Val: " << it.second << endl;
-    }
-    // Print Check for the queue
-    cout << "Queue Check:" << endl;
-    while (!updateOrder.empty()) {
-        cout << "\t " << updateOrder.front() << ", Val: " << toClient.at(updateOrder.front()).getValue() << endl;
-        updateOrder.pop();
-    }
+  //      cout << "\tVar name :" << it.first << endl;
+   // }
+
+
+
+
 
 
 
@@ -155,6 +578,5 @@ int main() {
 
 
     threads[0].join();
-    threads[1].join();
     return 0;
 }

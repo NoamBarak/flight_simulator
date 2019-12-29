@@ -152,6 +152,8 @@ public:
     Expression *reversePolish(queue<string> queue);
 
     void setVariables(string string1);
+
+    void printVAls();
 };
 
 #endif //EX1_EX1_H
