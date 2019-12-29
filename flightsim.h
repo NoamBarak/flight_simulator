@@ -24,7 +24,7 @@
 
 class SleepCommand : public Command {
 public:
-    int virtual execute(vector<string> vector, int index) override;
+    int virtual execute(vector<string> vector, int index, bool onlyIndex) override;
 };
 
 class OpenServerCommand : public Command {
@@ -35,7 +35,7 @@ public:
         this->threads = threads1;
     }
 
-    int virtual execute(vector<string> vector, int index) override;
+    int virtual execute(vector<string> vector, int index, bool onlyIndex) override;
 };
 
 class ConnectCommand : public Command {
@@ -46,17 +46,17 @@ public:
         this->threads = thread1;
     }
 
-    int virtual execute(vector<string> vector, int index) override;
+    int virtual execute(vector<string> vector, int index, bool onlyIndex) override;
 };
 
 class DefineVarCommand : public Command {
 public:
-    int execute(vector<string> vector, int index) override;
+    int execute(vector<string> vector, int index, bool onlyIndex) override;
 };
 
 class PrintCommand : public Command {
 public:
-    int execute(vector<string> vector, int index) override;
+    int execute(vector<string> vector, int index, bool onlyIndex) override;
 };
 
 class IfCommand : public Command {
@@ -66,8 +66,7 @@ public:
     IfCommand(unordered_map<string, Command *> map1) {
         this->map = map1;
     }
-
-    int execute(vector<string> vector, int index) override;
+    int execute(vector<string> vector, int index, bool onlyIndex) override;
 };
 
 class WhileCommand : public Command {
@@ -77,13 +76,12 @@ public:
     WhileCommand(unordered_map<string, Command *> map1) {
         this->map = map1;
     }
-
-    int execute(vector<string> vector, int index) override;
+    int execute(vector<string> vector, int index, bool onlyIndex) override;
 };
 
 class AssignVarCommand : public Command {
 public:
-    int execute(vector<string> vector, int index) override;
+    int execute(vector<string> vector, int index, bool onlyIndex) override;
 };
 
 #endif //ADVANCEDE3_FLIGHTSIM_H

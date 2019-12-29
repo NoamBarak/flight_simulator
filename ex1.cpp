@@ -109,6 +109,11 @@ Variable &Variable::operator--(int) {
 }
 
 Expression *Interpreter::interpret(string equation) {
+    /*cout << "Interpreter map Variables: " << endl;
+    for (auto &it: interpreter.getVariables()) {
+        cout << "\tName: " << it.first << ", Val: " << it.second << endl;
+    }*/
+    cout<<"Interpreter here 1 equation: "<< equation <<endl;
     std::string::iterator end_pos = std::remove(equation.begin(), equation.end(), ' ');
     equation.erase(end_pos, equation.end());
     int n = equation.length();
@@ -121,17 +126,23 @@ Expression *Interpreter::interpret(string equation) {
     int rightBar = 0;
     int numOp = 0;
     int numsOrVars = 0;
+    //cout<<"Interpreter here 2 "<<endl;
     for (int i = 0; i < n; i++) {
+       // cout<<"Interpreter here 8 "<<endl;
         char a = chars[i];
         //valid
         // in A-Z / a-z
         bool inABC = ((65 <= chars[i] && chars[i] <= 90) || (97 <= chars[i] && chars[i] <= 122) || chars[i]==95);
         bool isOp = (isOperator(chars[i]));
         bool inNums = ((48 <= (int) (chars[i]) && (int) (chars[i]) <= 57) || chars[i] == 46)|| chars[i]=='0';
-        if (!isOp && !inNums && !(inABC))
+        //cout<<"Interpreter here 10 "<<endl;
+        if (!isOp && !inNums && !(inABC)){
+            cout<<"problematic char: "<< chars[i]<<endl;
             throw "invalid";
+        }
         // If it's an operator
         if (isOperator(chars[i])) {
+          //  cout<<"Interpreter here 4 "<<endl;
             // checking that the next char is a valid char
             bool flag = false;
             bool inNums1 = ((48 <= (int) (chars[i+1]) && (int) (chars[i+1]) <= 57) || chars[i] == 46)|| chars[i+1]=='0';
@@ -196,6 +207,7 @@ Expression *Interpreter::interpret(string equation) {
                 }
             }
             stack.push(op);
+            //cout<<"Interpreter here 5 "<<endl;
         } else {
             // If it's a number
             if (inNums) {
@@ -212,6 +224,7 @@ Expression *Interpreter::interpret(string equation) {
                 queue.push(s);
                 numsOrVars++;
             } else {
+              //  cout<<"Interpreter here 3 "<<endl;
                 // it's a variable
                 int start = i;
                 bool inNums1 = ((48 <= (int) (chars[i+1]) && (int) (chars[i+1]) <= 57) || chars[i+1] == 46);
@@ -249,6 +262,7 @@ Expression *Interpreter::interpret(string equation) {
         stack.pop();
     }
     delete[] (chars);
+    //cout<<"Interpreter here 9 "<<endl;
     return reversePolish(queue);
 }
 

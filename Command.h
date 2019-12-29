@@ -11,7 +11,7 @@ using namespace std;
 class  Command {
 
 public:
-    int virtual  execute (vector<string> vector,int index) {
+    int virtual  execute (vector<string> vector,int index, bool onlyIndex) {
         cout<<"Base execute"<<endl;
     };
     ~Command() {}

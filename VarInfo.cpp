@@ -34,13 +34,21 @@ public:
     }
 
     void setValue(double value1) {
+        cout << "setValue here 1 VALUE: "<< value1 << endl;
         this->value = value1;
+        cout << "setValue here 2 NAME: "<< this->name << endl;
         string varAsString = std::to_string(value1);
+        cout << "setValue here 3: " << endl;
         string varAssign = this->name + "=" + varAsString;
+        cout << "setValue here 4: "<< varAssign << endl;
         interpreter.setVariables(varAssign);
+        cout << "setValue here 5: " << endl;
         // if the direction is -> we need to update the simulator
         if (this->direction == "->") {
+            cout << "setValue here 6: " << endl;
             updateOrder.push(this->name);
+            cout << "setValue here 7: " << endl;
+            cout<<"Pushed to queue"<< this->name <<endl;
         }
     }
 };
