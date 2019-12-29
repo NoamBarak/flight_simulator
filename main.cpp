@@ -18,6 +18,7 @@ int main() {
     thread threads[2];
     // Initializing the <string,Command*> map
     unordered_map<string, Command *> map;
+    //unordered_map<string, Command *> map;
     // Adding the commands to the map
     OpenServerCommand openServerCommand = OpenServerCommand(threads);
     Command *openServerCommand2 = &openServerCommand;
