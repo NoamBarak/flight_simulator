@@ -66,6 +66,7 @@ public:
     IfCommand(unordered_map<string, Command *> map1) {
         this->map = map1;
     }
+
     int execute(vector<string> vector, int index, bool onlyIndex) override;
 };
 
@@ -76,6 +77,7 @@ public:
     WhileCommand(unordered_map<string, Command *> map1) {
         this->map = map1;
     }
+
     int execute(vector<string> vector, int index, bool onlyIndex) override;
 };
 

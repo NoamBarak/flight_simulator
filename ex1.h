@@ -12,6 +12,7 @@ using namespace std;
 #include <cstring>
 #include <string>
 #include <map>
+
 /**
  * Expression Interface
  */
@@ -139,8 +140,10 @@ class Interpreter {
 private:
     map<std::string, double> variables;
 public:
-    map<string,double> getVariables();
+    map<string, double> getVariables();
+
     void addVariable(string str);
+
     Expression *interpret(string equation);
 
     int precedence(char c);

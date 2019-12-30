@@ -18,77 +18,24 @@ std::mutex mutex_lock;
 AssignVarCommand assignVarCommand = AssignVarCommand();
 Command *assVar = &assignVarCommand;
 
-double convStringToNum(vector<string> vector, int index) {
-    double ans;
-    string st;
-    st = vector.at(index);
-    bool checkIfNum = true;
-    //check if the string is a number or expression
-    // if expression- do interpreter
-    //if number- do stod
-    for (int j = 0; j < st.length(); j++) {
-        if (!isdigit(st[j])) {
-            //not a number!
-            if (st.at(j) != '.') {
-                //Interpreter *i = new Interpreter();
-                //cout << "CONV here 1 " << endl;
-                Expression *e = nullptr;
-                try {
-                    // cout << "CONV here 2 " << endl;
-                    e = interpreter.interpret(st);
-                    //cout << "CONV here 3 " << endl;
-                    ans = e->calculate();
-                    //cout << "CONV here 4 " << endl;
-                    //delete e;
-                    //delete i;
-
-                } catch (const char *e) {
-                    if (e != nullptr) {
-                        cout << "ERROR" << endl;
-                        //delete e;
-                    }
-//                    if (i != nullptr) {
-//                        delete i;
-//                    }
-                    std::cout << e << std::endl;
-                }
-                checkIfNum = false;
-                break;
-            }
-        }
-    }
-    //cout << "CONV here 5 " << endl;
-    if (checkIfNum) {
-        ans = stod(st);
-    }
-    return ans;
-}
-
+// Function to turn a string into a double by using our interpreter
 double strExpCalculate(string st) {
     double ans;
     bool checkIfNum = true;
-    //check if the string is a number or expression
-    // if expression- do interpreter
-    //if number- do stod
+    //check if the string is a number or expression - if expression- do interpreter, if number- do stod
     for (int j = 0; j < st.length(); j++) {
         if (!isdigit(st[j])) {
             //not a number!
             if (st.at(j) != '.') {
-                //Interpreter *i = new Interpreter();
                 Expression *e = nullptr;
                 try {
                     e = interpreter.interpret(st);
                     ans = e->calculate();
                     delete e;
-                    //delete i;
-
                 } catch (const char *e) {
                     if (e != nullptr) {
                         delete e;
                     }
-//                    if (i != nullptr) {
-//                        delete i;
-//                    }
                     std::cout << e << std::endl;
                 }
                 checkIfNum = false;
@@ -102,66 +49,53 @@ double strExpCalculate(string st) {
     return ans;
 }
 
+double convStringToNum(vector<string> vector, int index) {
+    string st = vector.at(index);
+    return strExpCalculate(st);
+}
+
 int SleepCommand::execute(vector<string> vector, int index, bool onlyIndex) {
-    if (onlyIndex)
-        return index + 2;
-    cout << "Sleeping ..." << endl;
     double ans = convStringToNum(vector, index + 1);
     this_thread::sleep_for(chrono::milliseconds((int) (ans)));
-    //cout << "COM-" << vector.at(index) << ",  VAL-" << ans << endl;
-
     return index + 2;
 }
 
 void runClient(const char *ip, unsigned short portShort) {
-    //create socket
+    // Creating the socket
     int client_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (client_socket == -1) {
-        //error
         std::cerr << "Could not create a socket (Client)" << std::endl;
         exit(-1);
     }
-
-    //bind socket to IP address
-    // we first need to create the sockaddr obj.
-    sockaddr_in address; //in means IP4
+    // Bind a socket to an IP
+    sockaddr_in address;
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = inet_addr(ip); //give me any IP allocated for my machine
+    address.sin_addr.s_addr = inet_addr(ip);
     address.sin_port = htons(portShort);
 
     while (!clientConnected) {
         int is_connect = connect(client_socket, (struct sockaddr *) &address, sizeof(address));
-
         if (is_connect == -1) {
-            //std::cout << "Could not connect to host server (Client)" << std::endl;
-            //exit(-2);
+
         } else {
             std::cout << "Client is now connected to server" << std::endl;
             clientConnected = true;
         }
     }
-
-
-    // If we made a connection we will send the data
+    // We made the connection - we will start to send data
     while (true) {
-        // if there are variables that need to be sent to the simulator
-        //cout << "Queue Check:" << endl;
+        if (done)
+            break;
+        // If there are variables that need to be sent to the simulator
         if (!updateOrder.empty()) {
-            //queue<string> check = updateOrder;
-            //cout << "Queue Check:" << endl;
-            /*while (!check.empty()) {
-                cout << "\t " << check.front() << ", Val: " << toClient.at(check.front()).getValue()
-                     << endl;
-                check.pop();
-            }*/
-            // set bla/bla/bla value
+            // Constructing the correct message to the simulator
             string add = toClient.at(updateOrder.front()).getSim().substr(1, toClient.at(
                     updateOrder.front()).getSim().length() - 2);
             string msg = "set " + add + " " +
                          to_string(toClient.at(updateOrder.front()).getValue()) + "\r\n";
-            //cout << "Message - " << msg << endl;
             char char_array[msg.length() + 1];
             strcpy(char_array, msg.c_str());
+            // Sending the message
             int is_sent = send(client_socket, char_array, strlen(char_array), 0);
             updateOrder.pop();
             if (is_sent == -1) {
@@ -170,21 +104,21 @@ void runClient(const char *ip, unsigned short portShort) {
                 //std::cout << "Hello message sent to server" << std::endl;
             }
         } else
-            this_thread::sleep_for(std::chrono::milliseconds(200)); // no variables in the queue
+            // If there are no variables that need to be updated - the thread will sleep
+            this_thread::sleep_for(std::chrono::milliseconds(200));
     }
     close(client_socket);
 }
 
 int ConnectCommand::execute(vector<string> vector, int index, bool onlyIndex) {
-    if (onlyIndex)
-        return index + 3;
-    cout << "Connecting ..." << endl;
-    string add = vector.at(index + 1).substr(1, vector.at(index + 1).length() - 2);
-    const char *ip = add.c_str();
+    // Getting the necessary data to open a client server
+    string address = vector.at(index + 1).substr(1, vector.at(index + 1).length() - 2);
+    const char *ip = address.c_str();
     double ans = convStringToNum(vector, index + 2);
     string port = to_string(ans);
     const char *portNum = port.c_str();
     unsigned short portShort = (unsigned short) strtoul(portNum, NULL, 0);
+    // Opening a thread and inserting it into our thread array - so it can later join in main
     this->threads[1] = std::thread(runClient, ip, portShort);
     // Making sure the client is connected
     while (!clientConnected) {
@@ -194,6 +128,7 @@ int ConnectCommand::execute(vector<string> vector, int index, bool onlyIndex) {
 }
 
 unordered_map<string, int> initXMl() {
+    // Creating a map containing a var's address and its index in the XML data
     unordered_map<string, int> map;
     map.emplace(std::make_pair("/instrumentation/airspeed-indicator/indicated-speed-kt", 0));
     map.emplace(std::make_pair("/sim/time/warp", 1));
@@ -234,47 +169,36 @@ unordered_map<string, int> initXMl() {
     return map;
 }
 
-// The server thread runs the server
 void runServer(unsigned short portShort) {
     unordered_map<string, int> map = initXMl();
-    //create socket
+    // Creating the socket
     int socketfd = socket(AF_INET, SOCK_STREAM, 0);
     if (socketfd == -1) {
         //error
         std::cerr << "Could not create a socket" << std::endl;
         exit(-1);
     }
-
-    //bind socket to IP address
-    // we first need to create the sockaddr obj.
+    // Bind the socket to an IP address
     sockaddr_in address; //in means IP4
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY; //give me any IP allocated for my machine
+    address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(portShort);
-    //we need to convert our number
-    // to a number that the network understands.
-
-    //the actual bind command
     if (bind(socketfd, (struct sockaddr *) &address, sizeof(address)) == -1) {
         std::cerr << "Could not bind the socket to an IP" << std::endl;
         exit(-2);
     }
-
-    //making socket listen to the port
-
+    // Making the socket listen
     if (listen(socketfd, 5) == -1) { //can also set to SOMAXCON (max connections)
         std::cerr << "Error during listening command" << std::endl;
         exit(-3);
     } else {
         std::cout << "Server is now listening ..." << std::endl;
     }
-
-    // accepting a client
+    // Accepting a client
     sockaddr_in Caddress;
     int addreslen = sizeof(Caddress);
     int client_socket = accept(socketfd, (struct sockaddr *) &Caddress,
                                (socklen_t *) &Caddress);
-
     if (client_socket == -1) {
         std::cerr << "Error accepting client" << std::endl;
         exit(-4);
@@ -282,16 +206,17 @@ void runServer(unsigned short portShort) {
         cout << "Accepted Client" << endl;
         serverConnected = true;
     }
-
-    close(socketfd); //closing the listening socket !
-
-    //reading from client
+    close(socketfd);
+    // Getting data from the server
     while (true) {
+        if (done)
+            break;
+        // Reading the data from the server
         char buffer[1024] = {0};
         int valread = read(client_socket, buffer, 1024);
+        // Getting an XML data from the buffer
         string b = buffer;
         string a;
-        std::cout << "First " << b << endl << " (First) Size: " << b.size() << std::endl;
         // We want to make sure we only get one line of the XML data
         int firstEnter = -1, secondEnter = -1;
         // Finding the first \n
@@ -301,26 +226,25 @@ void runServer(unsigned short portShort) {
                 break;
             }
         }
-        // If there isnt even one \n - the buffer is invalid - we will dump the data
-        if (firstEnter == -1 || b.size()<324)
+        // If there isn't even one \n or if there isn't enough data - the buffer is invalid
+        if (firstEnter == -1 || b.size() < 324)
             continue;
         // Finding the second \n
         for (int j = (firstEnter + 1); j < 1024; j++) {
             //cout<<"HERE IN FOR"<<endl;
             if (buffer[j] == '\n') {
-                cout << "HERE IN IF" << endl;
                 secondEnter = j;
                 break;
             }
         }
-        // If the there isnt another \n - it means our data is stored in indexes 0 to firstEnter
+        // If the there isnt another \n - it means our data is stored in indexes 0 to firstEnter(\n)
         if (secondEnter == -1) {
             a = b.substr(0, firstEnter - 1);
 
         } else {
+            // The data is stored in indexes firstEnter to secondEnter
             a = b.substr(firstEnter + 1, secondEnter - firstEnter - 2);
         }
-        std::cout << "Second " << a << endl << " (Second) Size: " << a.size() << std::endl;
         // Now our string only contains the relevant XML data, so we will split the data accordingly
         vector<string> vector;
         string st;
@@ -335,39 +259,29 @@ void runServer(unsigned short portShort) {
         st = a.substr(last);
         vector.push_back(st);
         if (vector.size() > 1) {
-            /*for (int i = 0; i < vector.size(); i++) {
-                std::cout << vector.at(i) << ' ';
-            }*/
-
+            /* firstVarInput- making sure we get at least one initialization of the variables
+             * that need to be updated from the server so when we start assigning vars with data
+             * our interpreter will include all relevant variables and our program won't fail*/
             if (!fromServer.empty() && firstVarInput) {
+                // We will enter our variables maps and so we will use mutex
                 mutex_lock.lock();
-                //cout << "First" << endl;
                 for (auto &it: fromServer) {
                     string sim = it.second.getSim();
                     string add = sim.substr(1, sim.length() - 2);
                     int index = map.at(add);
                     it.second.setValue(stod(vector.at(index)));
-                    //cout << "\tVar name :" << it.first << " " << stod(vector.at(index)) << endl;
-                    // Print Check for the queue
                 }
-
                 mutex_lock.unlock();
                 firstVarInput = false;
             }
+            // We will enter our variables maps and so we will use mutex
             mutex_lock.lock();
-            //cout << "Second" << endl;
             for (auto &it: fromServer) {
                 string sim = it.second.getSim();
                 string add = sim.substr(1, sim.length() - 2);
                 int index = map.at(add);
-                cout << "Check: " << vector.at(index) << endl;
                 it.second.setValue(stod(vector.at(index)));
-                //cout << "\tVar name :" << it.first << " " << it.second.getValue() << endl;
             }
-            /*cout << "Interpreter map Variables: " << endl;
-            for (auto &it: interpreter.getVariables()) {
-                cout << "Name: "<<it.first << ", Val: " << it.second<<endl;
-            }*/
             mutex_lock.unlock();
         }
     }
@@ -380,9 +294,7 @@ int AssignVarCommand::execute(vector<string> vector, int index, bool onlyIndex) 
     string eqSign = vector[index + 1];//always "="
     //value of var
     double ans = convStringToNum(vector, index + 2);
-    //mutex_lock.lock();
     // if the var is in the -> map
-    //cout << "Name of Var: " << nameOfVar << " index: " << index << " ANSWER: " << (ans) << endl;
     if (toClient.find(nameOfVar) != toClient.end()) {
         toClient.at(nameOfVar).setValue(ans);
     } else {
@@ -390,19 +302,16 @@ int AssignVarCommand::execute(vector<string> vector, int index, bool onlyIndex) 
         VarInfo varInfo = VarInfo(nameOfVar);
         varInfo.setValue(ans);
     }
-    //mutex_lock.unlock();
-    // cout << "VAR-" << vector.at(index) << ",  SIGN-" << eqSign << ",  VAL-" << ans << endl;
     return index + 3;
 }
 
 int OpenServerCommand::execute(vector<string> vector, int index, bool onlyIndex) {
-    if (onlyIndex)
-        return index + 2;
-    cout << "Opening Server ..." << endl;
+    // Getting the necessary data to open a server
     double ans = convStringToNum(vector, index + 1);
     string port = std::to_string(ans);
     const char *portNum = port.c_str();
     unsigned short portShort = (unsigned short) strtoul(portNum, NULL, 0);
+    // Opening a thread and inserting it into our thread array - so it can later join in main
     this->threads[0] = std::thread(runServer, portShort);
     // Making sure the server is connected
     while (!serverConnected) {
@@ -412,52 +321,43 @@ int OpenServerCommand::execute(vector<string> vector, int index, bool onlyIndex)
 }
 
 int PrintCommand::execute(vector<string> vector, int index, bool onlyIndex) {
-    if (onlyIndex)
-        return index + 2;
-    cout << "Printing ..." << endl;
     string output = vector[index + 1];
     if (output[0] == '"') {
-        // its a string
+        // If it's a string
         string add = output.substr(1, output.length() - 2);
         output = add;
     } else {
+        // If it's not a string - we will interpret
         double ans = convStringToNum(vector, index + 1);
         output = to_string(ans);
     }
     cout << output << endl;
-    //cout << "COM-" << vector.at(index) << ",  OUTPUT-" << output << endl;
     return index + 2;
 }
 
 int DefineVarCommand::execute(vector<string> vector, int index, bool onlyIndex) {
-    cout << "var shit: ";
     string nameOfVar, arrowOrEq, sim, address;
     double value = 0;
     nameOfVar = vector[index + 1];
     arrowOrEq = vector[index + 2];
-
+    // If the var is initialized - var name arrow sim("address")
     if (vector[index + 2] == "->" || vector[index + 2] == "<-") {
         if (onlyIndex)
             return index + 5;
         sim = vector[index + 3];//always "sim"
         address = vector[index + 4];
-        cout << "COM-" << vector.at(index) << ",  NAME-" << nameOfVar <<
-             ",  SIGN-" << arrowOrEq << ",  SIM-" << sim << ",  AD-" << address << endl;
         // Adding the variable to the map
         VarInfo varInfo = VarInfo(nameOfVar, address, vector[index + 2]);
+        // Adding the var to the right map
         if (vector[index + 2] == "->") {
-            //map.emplace(std::make_pair("openDataServer", openServerCommand2));
             toClient.emplace(std::make_pair(nameOfVar, varInfo));
         } else if (vector[index + 2] == "<-") {
             fromServer.emplace(std::make_pair(nameOfVar, varInfo));
         }
         return index + 5;
     }
-    if (onlyIndex)
-        return index + 4;
+    // If the var is initialized - var name = something
     value = convStringToNum(vector, index + 3);
-    cout << "COM-" << vector.at(index) << ",  NAME-" << nameOfVar <<
-         ",  SIGN-" << arrowOrEq << ",  VAL-" << value << endl;
     VarInfo varInfo1 = VarInfo(nameOfVar);
     varInfo1.setValue(value);
     return index + 4;
@@ -485,6 +385,7 @@ int IfCommand::execute(vector<string> vector, int index, bool onlyIndex) {
 }
 
 bool conditionCheck(string cond) {
+    // A function to check if the condition is true/false
     string leftPart, op, rightPart;
     int firPlace;
     char options[] = {'<', '>', '!', '='};
@@ -515,74 +416,8 @@ bool conditionCheck(string cond) {
 }
 
 int WhileCommand::execute(vector<string> vector, int index, bool onlyIndex) {
-    /* interpreter.setVariables("alt=2");
-     interpreter.setVariables("h0=2");
-     interpreter.setVariables("heading=2");
-     interpreter.setVariables("aileron=2");
-     interpreter.setVariables("roll=2");
-     interpreter.setVariables("elevator=2");
-     interpreter.setVariables("pitch=2");*/
-
-    /*cout << "While Command" << endl;
     string whileCom = vector[index]; //always "while"
     string cond = vector[index + 1];
-    cout << "Condition: " << cond << endl;
-    string leftParen = vector[index + 2]; // {
-    index = index + 3;
-    bool first = true;
-    // saving the index of the first command
-    int startIndex = index;
-    cout << "Start index " << startIndex << endl;
-    // creating a list of commands we need to execute if the condiiton is true
-    static list<Command *> commandList;
-    commandList.clear();
-    while (vector[index] != "}") {
-        string insdk = vector[index];
-        cout << "index: " << insdk << index << endl;
-        // Entering each command to the commands list
-        if (map.find(vector[index]) != map.end()) {
-            Command *c = map.at(vector[index]);
-            cout << "2" << endl;
-            if(first){
-                commandList.push_front(c);
-                first = false;
-                continue;
-            }
-            commandList.push_back(c);
-            index = c->execute(vector, index, true);
-        } else {
-            if(first){
-                commandList.push_front(assVar);
-                cout << "1" << endl;
-                first = false;
-                continue;
-            }
-            commandList.push_back(assVar);
-            cout << "1" << endl;
-            index = assVar->execute(vector, index, true);
-        }
-    }
-    cout << "While here 2" << endl;
-    // checking the condition every iteration
-    while (conditionCheck(cond)) {
-        // each iteration the helper index will be at the index of the first command in our while condition
-        int helperIndex = startIndex;
-        mutex_lock.lock();
-        // executing each command in out map
-        for (auto const &c : commandList) {
-            if (c != NULL) {
-                cout << "While here 3 index: " << helperIndex << endl;
-                helperIndex = c->execute(vector, helperIndex, false); //segmentation fault
-                //cout << "While here 4" << startIndex << endl;
-            }
-            mutex_lock.unlock();
-        }
-        break;
-    }*/
-    //cout << "While Command!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
-    string whileCom = vector[index]; //always "while"
-    string cond = vector[index + 1];
-    //cout << "Condition:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << cond << endl;
     string leftParen = vector[index + 2]; // {
     index = index + 3;
     int saveIndex = index;
@@ -593,17 +428,12 @@ int WhileCommand::execute(vector<string> vector, int index, bool onlyIndex) {
     int num = 1;
     commandList.clear();
     while (bigCheck) {
-        //cout << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << num << "&&&&&&&&&&&&&&&&&" << endl;
         index = saveIndex;
         if (checkCond) {
-            //cout << "COND TRUE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
             if (isFirst) {
-                //cout << "FIRST TIME!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
                 isFirst = false;
                 while (vector[index] != "}") {
                     // Entering each command to the commands list
-                    //cout << "COM--" << vector[index] << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
-                    //cout << "INDEX--" << index << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
                     if (map.find(vector[index]) != map.end()) {
                         Command *c = map.at(vector[index]);
                         commandList.push_back(c);
@@ -611,9 +441,6 @@ int WhileCommand::execute(vector<string> vector, int index, bool onlyIndex) {
                         index = c->execute(vector, index, false);
                         mutex_lock.unlock();
                     } else {
-
-                        /*AssignVarCommand assignVarCommand = AssignVarCommand();
-                        Command *assVar = &assignVarCommand;*/
                         commandList.push_back(assVar);
                         mutex_lock.lock();
                         index = assVar->execute(vector, index, false);
@@ -624,7 +451,7 @@ int WhileCommand::execute(vector<string> vector, int index, bool onlyIndex) {
                 for (auto const &c : commandList) {
                     if (c != NULL) {
                         mutex_lock.lock();
-                        index = c->execute(vector, index, false); //segmentation fault
+                        index = c->execute(vector, index, false);
                         mutex_lock.unlock();
                     }
                 }
@@ -635,8 +462,6 @@ int WhileCommand::execute(vector<string> vector, int index, bool onlyIndex) {
             while (vector[index] != "}") {
                 index++;
             }
-            //cout << "FINISHED WHILE alt: server - " << fromServer.at("alt").getValue() << " interpreter: "
-            //   << interpreter.getVariables().at("alt") << endl;
             return index + 1;
         }
         num++;
@@ -654,12 +479,10 @@ void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
         //Command
         if (map.find(fileVector[i]) != map.end()) {
             Command *c = map.at(fileVector[i]);
-            //cout << "here !" << fileVector[i] << "!" << endl;
             if (fileVector[i] == "var") {
                 if (!beforeDefineVarCom) {
                     //this is the first DefineVar command
                     beforeDefineVarCom = true;
-                    cout << "!!!!!!!!!!!!!!" << fileVector[i + 1] << "!!!!!!!!!!!!" << endl;
                 }
             }
 
@@ -670,23 +493,12 @@ void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
                         //this is the first command after DefineVar
                         afterDefineVarCom = true;
                         firstVarInput = afterDefineVarCom;
-                        /*while (firstVarInput) {
-                            std::this_thread::sleep_for(std::chrono::microseconds(1000));
-                        }*/
-                        cout << "------------" << fileVector[i] << "----------" << endl;
                     }
                 }
             }
         }
-            /*else {
-                //loop or condition
-                if (fileVector[i].find("while") != string::npos || fileVector[i].find("if") != string::npos) {
-                    //cout << "here !" << fileVector[i] << "!" << endl;
-                    i = LoopOrCondCommand(fileVector, i, map);
-                }*/
+
         else {
-            //  cout << "here !" << fileVector[i] << "!" << endl;
-            //AssignVarCommand assignVarCommand = AssignVarCommand();
             mutex_lock.lock();
             i = assignVarCommand.execute(fileVector, i, false);
             mutex_lock.unlock();

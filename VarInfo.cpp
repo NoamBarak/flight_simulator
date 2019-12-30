@@ -14,7 +14,6 @@ private:
     string direction;
 public:
     VarInfo(string name1, string sim1, string dir) {
-        // var name ->\-< sim add
         this->name = name1;
         this->sim = sim1;
         this->direction = dir;
@@ -34,23 +33,17 @@ public:
     }
 
     void setValue(double value1) {
-        //cout << "setValue here 1 VALUE: "<< value1 << endl;
         this->value = value1;
-        if(this->name=="alt"){
-            //cout << "setValue here 2 NAME: "<< this->name << " Val : "<< value1 << endl;
-        }
+        /*if(this->name=="alt"){
+            cout<<"alt "<< this->getValue()<<endl;
+        }*/
+        // Each time the value changes it is initialized/updated in the interpreter
         string varAsString = std::to_string(value1);
-        //cout << "setValue here 3: " << endl;
         string varAssign = this->name + "=" + varAsString;
-        //cout << "setValue here 4: "<< varAssign << endl;
         interpreter.setVariables(varAssign);
-        //cout << "setValue here 5: " << endl;
         // if the direction is -> we need to update the simulator
         if (this->direction == "->") {
-            //  cout << "setValue here 6: " << endl;
             updateOrder.push(this->name);
-            //cout << "setValue here 7: " << endl;
-            //cout<<"Pushed to queue"<< this->name <<endl;
         }
     }
 };

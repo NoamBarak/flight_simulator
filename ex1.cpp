@@ -131,12 +131,12 @@ Expression *Interpreter::interpret(string equation) {
         char a = chars[i];
         //valid
         // in A-Z / a-z
-        bool inABC = ((65 <= chars[i] && chars[i] <= 90) || (97 <= chars[i] && chars[i] <= 122) || chars[i]==95);
+        bool inABC = ((65 <= chars[i] && chars[i] <= 90) || (97 <= chars[i] && chars[i] <= 122) || chars[i] == 95);
         bool isOp = (isOperator(chars[i]));
-        bool inNums = ((48 <= (int) (chars[i]) && (int) (chars[i]) <= 57) || chars[i] == 46)|| chars[i]=='0';
+        bool inNums = ((48 <= (int) (chars[i]) && (int) (chars[i]) <= 57) || chars[i] == 46) || chars[i] == '0';
         //cout<<"Interpreter here 10 "<<endl;
-        if (!isOp && !inNums && !(inABC)){
-            cout<<"problematic char: "<< chars[i]<<endl;
+        if (!isOp && !inNums && !(inABC)) {
+            cout << "problematic char: " << chars[i] << endl;
             throw "invalid";
         }
         // If it's an operator
@@ -144,8 +144,10 @@ Expression *Interpreter::interpret(string equation) {
             //  cout<<"Interpreter here 4 "<<endl;
             // checking that the next char is a valid char
             bool flag = false;
-            bool inNums1 = ((48 <= (int) (chars[i+1]) && (int) (chars[i+1]) <= 57) || chars[i] == 46)|| chars[i+1]=='0';
-            bool inABC1 = ((65 <= chars[i+1] && chars[i+1] <= 90) || (97 <= chars[i+1] && chars[i+1] <= 122) || chars[i+1]==95);
+            bool inNums1 = ((48 <= (int) (chars[i + 1]) && (int) (chars[i + 1]) <= 57) || chars[i] == 46) ||
+                           chars[i + 1] == '0';
+            bool inABC1 = ((65 <= chars[i + 1] && chars[i + 1] <= 90) || (97 <= chars[i + 1] && chars[i + 1] <= 122) ||
+                           chars[i + 1] == 95);
             if (chars[i] == '-' && !(isOperator(chars[i + 1])) &&
                 !(inNums1) && !inABC1)
                 throw "illegal math expression";
@@ -167,7 +169,8 @@ Expression *Interpreter::interpret(string equation) {
             if (i == 0 || chars[(i - 1)] == '(') {
                 // + will be $, - will be %
                 if (chars[i] == '+') {
-                    op = '$';}
+                    op = '$';
+                }
                 if (chars[i] == '-') {
                     op = '%';
                 }
@@ -226,10 +229,10 @@ Expression *Interpreter::interpret(string equation) {
                 //  cout<<"Interpreter here 3 "<<endl;
                 // it's a variable
                 int start = i;
-                bool inNums1 = ((48 <= (int) (chars[i+1]) && (int) (chars[i+1]) <= 57) || chars[i+1] == 46);
+                bool inNums1 = ((48 <= (int) (chars[i + 1]) && (int) (chars[i + 1]) <= 57) || chars[i + 1] == 46);
                 while (((i < n - 1) && !isOperator(chars[i + 1]) &&
-                        (inNums1 ||(65 <= chars[i+1] && chars[i+1] <= 90) ||
-                         (97 <= chars[i+1] && chars[i+1] <= 122))) || chars[i+1]=='_') {
+                        (inNums1 || (65 <= chars[i + 1] && chars[i + 1] <= 90) ||
+                         (97 <= chars[i + 1] && chars[i + 1] <= 122))) || chars[i + 1] == '_') {
                     i++;
                 }
                 int x = (i - start) + 1;
@@ -300,7 +303,7 @@ void Interpreter::addVariable(string str) {
     strcpy(key_arr, key.c_str());
     for (int i = 0; i < keyLen; i++) {
         bool inABC = ((65 <= (int) (key_arr[i]) && (int) (key_arr[i]) <= 90) ||
-                      (97 <= (int) (key_arr[i]) && (int) (key_arr[i]) <= 122) || key_arr[i]==95);
+                      (97 <= (int) (key_arr[i]) && (int) (key_arr[i]) <= 122) || key_arr[i] == 95);
         if (i == 0) {
             if (!(inABC))
                 throw "illegal variable assignment!";

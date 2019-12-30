@@ -2,6 +2,7 @@
 // Created by karin on 25/12/2019.
 //
 #include "flightsim.h"
+
 void openDataServerLexer(string line, string checkCom, int i, vector<string> *v1) {
     string port;
     //insert the relevant command into vector

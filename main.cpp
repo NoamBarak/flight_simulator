@@ -15,6 +15,7 @@ bool firstVarInput = false;
 bool done = false;
 
 int main() {
+    // Initializing a thread array
     thread threads[2];
     // Initializing the <string,Command*> map
     unordered_map<string, Command *> map;
@@ -40,119 +41,14 @@ int main() {
     IfCommand ifCommand = IfCommand(map);
     Command *ifCommand2 = &ifCommand;
     map.emplace(std::make_pair("if", ifCommand2));
+
     // Initializing the vector
     vector<string> fileVector;
     fileVector = lexer();
-
-
-    Command *c = map.at("while");
-    //c->execute(fileVector,0);
-    //std::cout << "here 0 : " << typeid(c).name() << '\n';
-
-    //int k = c->execute(fileVector, 1);
-    //   (map.at("Sleep"))->execute(fileVector, 1);
-    //   (map.at("var"))->execute(fileVector, 1);
-    //   (map.at("openDataServer"))->execute(fileVector, 0);
-    //(map.at("Sleeping"))->execute(fileVector,0);
-    // Noam Testing line 287
-
-
-    cout << "---------------NOAM--------------- " << endl;
-
+    // Starting to interpret and execute
     parser(map, fileVector);
-
-    /*cout << "---------------Karin--------------- " << endl;
-    this_thread::sleep_for(std::chrono::microseconds(8000));
-    cout << "to client map (->):" << endl;
-    for (auto &it: toClient) {
-        // Do stuff
-        //cout << "\tVar name :" << it.first <<endl;
-        // ההדפסה בשורה הבאה מסוכנת, יכולה לעשות שגיאה - תלוי בזמן ריצה של הת'רדים
-        cout << "\tVar name :" << it.first << ", Val: " << it.second.getValue() << endl;
-    }
-    cout << "from server map (<-):" << endl;
-    for (auto &it: fromServer) {
-        // Do stuff
-        cout << "\tVar name :" << it.first << ", Val: " << it.second.getValue() << endl;
-    }
-    cout << "Interpreter map Variables: " << endl;
-    for (auto &it: interpreter.getVariables()) {
-        cout << "\tName: " << it.first << ", Val: " << it.second << endl;
-    }
-    // Print Check for the queue
-    cout << "Queue Check:" << endl;
-    while (!updateOrder.empty()) {
-        cout << "\t " << updateOrder.front() << ", Val: " << toClient.at(updateOrder.front()).getValue() << endl;
-        updateOrder.pop();
-    }*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // End of Noam Testing till 321
-
-    // Karin Testing line 323
-
-    //OpenServerCommand *openServerCommand1 = new OpenServerCommand;
-    //i += openServerCommand1->execute(fileVector, i);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // End of Karin Testing 357
-
     done = true;
+    // Waiting for the threads to close and join the main correctly
     threads[0].join();
     threads[1].join();
     return 0;
