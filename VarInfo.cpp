@@ -37,7 +37,7 @@ public:
         //cout << "setValue here 1 VALUE: "<< value1 << endl;
         this->value = value1;
         if(this->name=="alt"){
-            cout << "setValue here 2 NAME: "<< this->name << " Val : "<< value1 << endl;
+            //cout << "setValue here 2 NAME: "<< this->name << " Val : "<< value1 << endl;
         }
         string varAsString = std::to_string(value1);
         //cout << "setValue here 3: " << endl;
@@ -47,7 +47,7 @@ public:
         //cout << "setValue here 5: " << endl;
         // if the direction is -> we need to update the simulator
         if (this->direction == "->") {
-          //  cout << "setValue here 6: " << endl;
+            //  cout << "setValue here 6: " << endl;
             updateOrder.push(this->name);
             //cout << "setValue here 7: " << endl;
             //cout<<"Pushed to queue"<< this->name <<endl;

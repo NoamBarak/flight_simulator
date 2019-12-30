@@ -289,9 +289,39 @@ void runServer(unsigned short portShort) {
     while (true) {
         char buffer[1024] = {0};
         int valread = read(client_socket, buffer, 1024);
-        string a = buffer;
-        //std::cout << a << std::endl;
-        // Noam part HERE!
+        string b = buffer;
+        string a;
+        std::cout << "First " << b << endl << " (First) Size: " << b.size() << std::endl;
+        // We want to make sure we only get one line of the XML data
+        int firstEnter = -1, secondEnter = -1;
+        // Finding the first \n
+        for (int i = 0; i < 1024; i++) {
+            if (buffer[i] == '\n') {
+                firstEnter = i;
+                break;
+            }
+        }
+        // If there isnt even one \n - the buffer is invalid - we will dump the data
+        if (firstEnter == -1 || b.size()<324)
+            continue;
+        // Finding the second \n
+        for (int j = (firstEnter + 1); j < 1024; j++) {
+            //cout<<"HERE IN FOR"<<endl;
+            if (buffer[j] == '\n') {
+                cout << "HERE IN IF" << endl;
+                secondEnter = j;
+                break;
+            }
+        }
+        // If the there isnt another \n - it means our data is stored in indexes 0 to firstEnter
+        if (secondEnter == -1) {
+            a = b.substr(0, firstEnter - 1);
+
+        } else {
+            a = b.substr(firstEnter + 1, secondEnter - firstEnter - 2);
+        }
+        std::cout << "Second " << a << endl << " (Second) Size: " << a.size() << std::endl;
+        // Now our string only contains the relevant XML data, so we will split the data accordingly
         vector<string> vector;
         string st;
         int last = 0;
@@ -330,6 +360,7 @@ void runServer(unsigned short portShort) {
                 string sim = it.second.getSim();
                 string add = sim.substr(1, sim.length() - 2);
                 int index = map.at(add);
+                cout << "Check: " << vector.at(index) << endl;
                 it.second.setValue(stod(vector.at(index)));
                 //cout << "\tVar name :" << it.first << " " << it.second.getValue() << endl;
             }
@@ -351,7 +382,7 @@ int AssignVarCommand::execute(vector<string> vector, int index, bool onlyIndex) 
     double ans = convStringToNum(vector, index + 2);
     //mutex_lock.lock();
     // if the var is in the -> map
-    cout << "Name of Var: " << nameOfVar << " index: " << index << " ANSWER: " << (ans) << endl;
+    //cout << "Name of Var: " << nameOfVar << " index: " << index << " ANSWER: " << (ans) << endl;
     if (toClient.find(nameOfVar) != toClient.end()) {
         toClient.at(nameOfVar).setValue(ans);
     } else {
@@ -548,10 +579,10 @@ int WhileCommand::execute(vector<string> vector, int index, bool onlyIndex) {
         }
         break;
     }*/
-    cout << "While Command!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+    //cout << "While Command!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
     string whileCom = vector[index]; //always "while"
     string cond = vector[index + 1];
-    cout << "Condition:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << cond << endl;
+    //cout << "Condition:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << cond << endl;
     string leftParen = vector[index + 2]; // {
     index = index + 3;
     int saveIndex = index;
@@ -562,17 +593,17 @@ int WhileCommand::execute(vector<string> vector, int index, bool onlyIndex) {
     int num = 1;
     commandList.clear();
     while (bigCheck) {
-        cout << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << num << "&&&&&&&&&&&&&&&&&" << endl;
+        //cout << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << num << "&&&&&&&&&&&&&&&&&" << endl;
         index = saveIndex;
         if (checkCond) {
-            cout << "COND TRUE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+            //cout << "COND TRUE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
             if (isFirst) {
-                cout << "FIRST TIME!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+                //cout << "FIRST TIME!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
                 isFirst = false;
                 while (vector[index] != "}") {
                     // Entering each command to the commands list
-                    cout << "COM--" << vector[index] << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
-                    cout << "INDEX--" << index << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+                    //cout << "COM--" << vector[index] << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+                    //cout << "INDEX--" << index << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
                     if (map.find(vector[index]) != map.end()) {
                         Command *c = map.at(vector[index]);
                         commandList.push_back(c);
@@ -604,8 +635,8 @@ int WhileCommand::execute(vector<string> vector, int index, bool onlyIndex) {
             while (vector[index] != "}") {
                 index++;
             }
-            cout << "FINISHED WHILE alt: server - " << fromServer.at("alt").getValue() << " interpreter: "
-                 << interpreter.getVariables().at("alt") << endl;
+            //cout << "FINISHED WHILE alt: server - " << fromServer.at("alt").getValue() << " interpreter: "
+            //   << interpreter.getVariables().at("alt") << endl;
             return index + 1;
         }
         num++;

@@ -71,7 +71,6 @@ int main() {
         cout << "\tVar name :" << it.first << ", Val: " << it.second.getValue() << endl;
     }
     cout << "from server map (<-):" << endl;
-
     for (auto &it: fromServer) {
         // Do stuff
         cout << "\tVar name :" << it.first << ", Val: " << it.second.getValue() << endl;
