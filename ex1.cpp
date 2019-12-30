@@ -1,4 +1,3 @@
-
 #include <algorithm>
 #include "ex1.h"
 
@@ -128,7 +127,7 @@ Expression *Interpreter::interpret(string equation) {
     int numsOrVars = 0;
     //cout<<"Interpreter here 2 "<<endl;
     for (int i = 0; i < n; i++) {
-       // cout<<"Interpreter here 8 "<<endl;
+        // cout<<"Interpreter here 8 "<<endl;
         char a = chars[i];
         //valid
         // in A-Z / a-z
@@ -142,7 +141,7 @@ Expression *Interpreter::interpret(string equation) {
         }
         // If it's an operator
         if (isOperator(chars[i])) {
-          //  cout<<"Interpreter here 4 "<<endl;
+            //  cout<<"Interpreter here 4 "<<endl;
             // checking that the next char is a valid char
             bool flag = false;
             bool inNums1 = ((48 <= (int) (chars[i+1]) && (int) (chars[i+1]) <= 57) || chars[i] == 46)|| chars[i+1]=='0';
@@ -224,7 +223,7 @@ Expression *Interpreter::interpret(string equation) {
                 queue.push(s);
                 numsOrVars++;
             } else {
-              //  cout<<"Interpreter here 3 "<<endl;
+                //  cout<<"Interpreter here 3 "<<endl;
                 // it's a variable
                 int start = i;
                 bool inNums1 = ((48 <= (int) (chars[i+1]) && (int) (chars[i+1]) <= 57) || chars[i+1] == 46);
@@ -436,4 +435,3 @@ int Interpreter::precedence(char c) {
     } else
         return (-1);
 }
-

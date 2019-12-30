@@ -1,4 +1,3 @@
-
 #ifndef FLIGHTSIM_COMMAND_H
 #define FLIGHTSIM_COMMAND_H
 #include <iostream>
@@ -17,4 +16,4 @@ public:
     ~Command() {}
 };
 
-#endif //FLIGHTSIM_COMMAND_H
+#endif //FLIGHTSIM_COMMAND_Hf

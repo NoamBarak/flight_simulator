@@ -598,9 +598,7 @@ int WhileCommand::execute(vector<string> vector, int index, bool onlyIndex) {
                     }
                 }
             } else {
-                cout << "NOT FIRST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
                 for (auto const &c : commandList) {
-                    cout<<"CHECK INDEX"<<index<<endl;
                     if (c != NULL) {
                         mutex_lock.lock();
                         index = c->execute(vector, index, false); //segmentation fault
@@ -618,6 +616,7 @@ int WhileCommand::execute(vector<string> vector, int index, bool onlyIndex) {
         }
         num++;
     }
+
 }
 
 
@@ -659,8 +658,6 @@ void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
                 if (fileVector[i].find("while") != string::npos || fileVector[i].find("if") != string::npos) {
                     //cout << "here !" << fileVector[i] << "!" << endl;
                     i = LoopOrCondCommand(fileVector, i, map);
-
-
                 }*/
         else {
             //  cout << "here !" << fileVector[i] << "!" << endl;
@@ -671,4 +668,3 @@ void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
         }
     }
 }
-
