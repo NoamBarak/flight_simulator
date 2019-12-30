@@ -108,7 +108,7 @@ int SleepCommand::execute(vector<string> vector, int index, bool onlyIndex) {
     cout << "Sleeping ..." << endl;
     double ans = convStringToNum(vector, index + 1);
     this_thread::sleep_for(chrono::milliseconds((int) (ans)));
-    cout << "COM-" << vector.at(index) << ",  VAL-" << ans << endl;
+    //cout << "COM-" << vector.at(index) << ",  VAL-" << ans << endl;
 
     return index + 2;
 }
@@ -345,30 +345,22 @@ void runServer(unsigned short portShort) {
 int AssignVarCommand::execute(vector<string> vector, int index, bool onlyIndex) {
     if (onlyIndex)
         return index + 3;
-    cout << "assigning var ... " << endl;
     string nameOfVar = vector[index];
-    cout << "Name of Var: " << nameOfVar << " index: " << index << endl;
     string eqSign = vector[index + 1];//always "="
     //value of var
-    cout << "Assignvar here 1: " << endl;
     double ans = convStringToNum(vector, index + 2);
     //mutex_lock.lock();
     // if the var is in the -> map
-    cout << "Assignvar here 2 ANSWER: " << (ans) << endl;
+    cout << "Name of Var: " << nameOfVar << " index: " << index << " ANSWER: " << (ans) << endl;
     if (toClient.find(nameOfVar) != toClient.end()) {
-        cout << "Assignvar here 3: " << endl;
         toClient.at(nameOfVar).setValue(ans);
-        cout << "Assignvar here 4: " << endl;
     } else {
-        cout << "Assignvar here 5 NAME: " << nameOfVar << endl;
         // if the var is not in the map, meaning its a var that doesnt belong to any map
         VarInfo varInfo = VarInfo(nameOfVar);
-        cout << "Assignvar here 6: " << endl;
         varInfo.setValue(ans);
-        cout << "Assignvar here 7: " << endl;
     }
     //mutex_lock.unlock();
-    cout << "VAR-" << vector.at(index) << ",  SIGN-" << eqSign << ",  VAL-" << ans << endl;
+    // cout << "VAR-" << vector.at(index) << ",  SIGN-" << eqSign << ",  VAL-" << ans << endl;
     return index + 3;
 }
 
@@ -612,6 +604,8 @@ int WhileCommand::execute(vector<string> vector, int index, bool onlyIndex) {
             while (vector[index] != "}") {
                 index++;
             }
+            cout << "FINISHED WHILE alt: server - " << fromServer.at("alt").getValue() << " interpreter: "
+                 << interpreter.getVariables().at("alt") << endl;
             return index + 1;
         }
         num++;

@@ -112,7 +112,7 @@ Expression *Interpreter::interpret(string equation) {
     for (auto &it: interpreter.getVariables()) {
         cout << "\tName: " << it.first << ", Val: " << it.second << endl;
     }*/
-    cout<<"Interpreter here 1 equation: "<< equation <<endl;
+    //cout<<"Interpreter here 1 equation: "<< equation <<endl;
     std::string::iterator end_pos = std::remove(equation.begin(), equation.end(), ' ');
     equation.erase(end_pos, equation.end());
     int n = equation.length();
