@@ -202,7 +202,7 @@ Expression *Interpreter::interpret(string equation) {
             numOp++;
             // While the stack has more "powerful" operator
             if (!stack.empty()) {
-                while (!stack.empty() && (precedence(stack.top()) > precedence(chars[i]))) {
+                while (!stack.empty() && (precedence(stack.top()) >= precedence(chars[i]))) {
                     std::string s(1, stack.top());
                     queue.push(s);
                     stack.pop();
