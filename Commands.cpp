@@ -363,27 +363,6 @@ int DefineVarCommand::execute(vector<string> vector, int index, bool onlyIndex) 
     return index + 4;
 }
 
-int IfCommand::execute(vector<string> vector, int index, bool onlyIndex) {
-    cout << "If Command" << endl;
-    string ifCom = vector[index];//always "if"
-    string cond = vector[index + 1];
-    string leftParen = vector[index + 2];
-    index = index + 3;
-    int startIndex = index;
-    while (vector[index] != "}") {
-        //Command
-        if (map.find(vector[index]) != map.end()) {
-            Command *c = map.at(vector[index]);
-            index = c->execute(vector, index, true);
-        } else {
-            AssignVarCommand assignVarCommand = AssignVarCommand();
-            index = assignVarCommand.execute(vector, index, true);
-
-        }
-    }
-    return index + 1;
-}
-
 bool conditionCheck(string cond) {
     // A function to check if the condition is true/false
     string leftPart, op, rightPart;
@@ -414,6 +393,61 @@ bool conditionCheck(string cond) {
     else if (op == "!=")
         return left != right;
 }
+
+int IfCommand::execute(vector<string> vector, int index, bool onlyIndex) {
+    /*cout << "If Command" << endl;
+    string ifCom = vector[index];//always "if"
+    string cond = vector[index + 1];
+    string leftParen = vector[index + 2];
+    index = index + 3;
+    int startIndex = index;
+    while (vector[index] != "}") {
+        //Command
+        if (map.find(vector[index]) != map.end()) {
+            Command *c = map.at(vector[index]);
+            index = c->execute(vector, index, true);
+        } else {
+            AssignVarCommand assignVarCommand = AssignVarCommand();
+            index = assignVarCommand.execute(vector, index, true);
+
+        }
+    }
+    return index + 1;*/
+    string whileCom = vector[index]; //always "while"
+    string cond = vector[index + 1];
+    string leftParen = vector[index + 2]; // {
+    index = index + 3;
+    int saveIndex = index;
+    bool bigCheck = true;
+    bool checkCond = conditionCheck(cond);
+    bool isFirst = true;
+    //while (bigCheck) {
+        index = saveIndex;
+        if (checkCond) {
+                while (vector[index] != "}") {
+                    // Executing each command to the commands list
+                    if (map.find(vector[index]) != map.end()) {
+                        Command *c = map.at(vector[index]);
+                        mutex_lock.lock();
+                        index = c->execute(vector, index, false);
+                        mutex_lock.unlock();
+                    } else {
+                        mutex_lock.lock();
+                        index = assVar->execute(vector, index, false);
+                        mutex_lock.unlock();
+                    }
+                }
+                return index + 1;
+        } else {
+            while (vector[index] != "}") {
+                index++;
+            }
+            return index + 1;
+        }
+    //}
+}
+
+
 
 int WhileCommand::execute(vector<string> vector, int index, bool onlyIndex) {
     string whileCom = vector[index]; //always "while"
