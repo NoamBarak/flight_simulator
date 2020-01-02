@@ -380,6 +380,9 @@ bool conditionCheck(string cond) {
     }
     double left = strExpCalculate(leftPart);
     double right = strExpCalculate(rightPart);
+    //if the values are almost the same, change them to be the same
+    if ((left - right < 0.0000000000001 && left - right > 0) || (right - left < 0.0000000000001 && right - left > 0))
+        right = left;
     if (op == "<")
         return left < right;
     else if (op == ">")
@@ -395,59 +398,38 @@ bool conditionCheck(string cond) {
 }
 
 int IfCommand::execute(vector<string> vector, int index, bool onlyIndex) {
-    /*cout << "If Command" << endl;
     string ifCom = vector[index];//always "if"
     string cond = vector[index + 1];
     string leftParen = vector[index + 2];
     index = index + 3;
     int startIndex = index;
-    while (vector[index] != "}") {
-        //Command
-        if (map.find(vector[index]) != map.end()) {
-            Command *c = map.at(vector[index]);
-            index = c->execute(vector, index, true);
-        } else {
-            AssignVarCommand assignVarCommand = AssignVarCommand();
-            index = assignVarCommand.execute(vector, index, true);
-
+    list < Command * > commandList;
+    bool checkCond = conditionCheck(cond);
+    if (checkCond) {
+        while (vector[index] != "}") {
+            // Entering each command to the commands list
+            if (map.find(vector[index]) != map.end()) {
+                Command *c = map.at(vector[index]);
+                commandList.push_back(c);
+                mutex_lock.lock();
+                index = c->execute(vector, index, false);
+                mutex_lock.unlock();
+            } else {
+                commandList.push_back(assVar);
+                mutex_lock.lock();
+                index = assVar->execute(vector, index, false);
+                mutex_lock.unlock();
+            }
+        }
+    } else {
+        //if false- we just need to return the relevant index of the vector
+        while (vector[index] != "}") {
+            index++;
         }
     }
-    return index + 1;*/
-    string whileCom = vector[index]; //always "while"
-    string cond = vector[index + 1];
-    string leftParen = vector[index + 2]; // {
-    index = index + 3;
-    int saveIndex = index;
-    bool bigCheck = true;
-    bool checkCond = conditionCheck(cond);
-    bool isFirst = true;
-    //while (bigCheck) {
-        index = saveIndex;
-        if (checkCond) {
-                while (vector[index] != "}") {
-                    // Executing each command to the commands list
-                    if (map.find(vector[index]) != map.end()) {
-                        Command *c = map.at(vector[index]);
-                        mutex_lock.lock();
-                        index = c->execute(vector, index, false);
-                        mutex_lock.unlock();
-                    } else {
-                        mutex_lock.lock();
-                        index = assVar->execute(vector, index, false);
-                        mutex_lock.unlock();
-                    }
-                }
-                return index + 1;
-        } else {
-            while (vector[index] != "}") {
-                index++;
-            }
-            return index + 1;
-        }
-    //}
+
+    return index + 1;
 }
-
-
 
 int WhileCommand::execute(vector<string> vector, int index, bool onlyIndex) {
     string whileCom = vector[index]; //always "while"
@@ -492,6 +474,7 @@ int WhileCommand::execute(vector<string> vector, int index, bool onlyIndex) {
             }
             checkCond = conditionCheck(cond);
         } else {
+            //if false- we just need to return the relevant index of the vector
             bigCheck = false;
             while (vector[index] != "}") {
                 index++;
@@ -530,9 +513,7 @@ void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
                     }
                 }
             }
-        }
-
-        else {
+        } else {
             mutex_lock.lock();
             i = assignVarCommand.execute(fileVector, i, false);
             mutex_lock.unlock();

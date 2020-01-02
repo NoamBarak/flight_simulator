@@ -65,7 +65,7 @@ void varLexer(string line, string checkCom, vector<string> *v1, int i) {
 }
 
 void otherCasesLexer(string line, string checkCom, vector<string> *v1) {
-    int firstLetter = line.find_first_not_of("\t");
+    int firstLetter = line.find_first_not_of(" \t");
     int eqSignPlace = line.find_first_of("=");
     //insert name of var into vector
     string str = (line.substr(firstLetter, eqSignPlace - firstLetter));
@@ -99,7 +99,7 @@ vector<string> lexer() {
             getline(file, line);
             len = line.length();
             for (int i = 0; i < len;) {
-                int firstLetter = line.find_first_not_of("\t");
+                int firstLetter = line.find_first_not_of(" \t");
                 checkCom = line.substr(firstLetter, 14);
                 //openDataServer command
                 if (checkCom == "openDataServer") {
@@ -148,7 +148,7 @@ vector<string> lexer() {
                     v1.push_back("{");
                     getline(file, line);
                     while (line.find("}") == -1) {
-                        firstLetter = line.find_first_not_of("\t");
+                        firstLetter = line.find_first_not_of(" \t");
                         checkCom = line.substr(firstLetter, 5);
                         //Print or Sleep command
                         if (checkCom == "Print" || checkCom == "Sleep") {
