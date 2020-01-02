@@ -83,7 +83,7 @@ void otherCasesLexer(string line, string checkCom, vector<string> *v1) {
 }
 
 //read file
-vector<string> lexer() {
+vector<string> lexer(string filename) {
     string right = "->";
     string check;
     vector<string> v1;
@@ -91,7 +91,7 @@ vector<string> lexer() {
     vector<string> fileVector;
     string line, checkCom;
     ifstream file;
-    file.open("fly.txt");
+    file.open(filename);
     if (!file.is_open()) {
         cout << "Unable to open file\n" << endl;
     } else {

@@ -14,7 +14,12 @@ Interpreter interpreter = Interpreter();
 bool firstVarInput = false;
 bool done = false;
 
-int main() {
+int main(int argc, char *argv[]) {
+    // Verifying that a filename is in the arguments
+    if(argc<2){
+        cerr<< "File name not added";
+        exit(1);
+    }
     // Initializing a thread array
     thread threads[2];
     // Initializing the <string,Command*> map
@@ -44,7 +49,7 @@ int main() {
 
     // Initializing the vector
     vector<string> fileVector;
-    fileVector = lexer();
+    fileVector = lexer(argv[1]);
     // Starting to interpret and execute
     parser(map, fileVector);
     done = true;
