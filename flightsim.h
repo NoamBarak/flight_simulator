@@ -7,6 +7,7 @@
 
 #include "Command.h"
 #include "ex1.h"
+#include "VarInfo.h"
 #include <thread>
 #include <unordered_map>
 #include <vector>
@@ -24,7 +25,7 @@
 
 class SleepCommand : public Command {
 public:
-    int virtual execute(vector<string> vector, int index, bool onlyIndex) override;
+    int virtual execute(vector<string> vector, int index) override;
 };
 
 class OpenServerCommand : public Command {
@@ -35,7 +36,7 @@ public:
         this->threads = threads1;
     }
 
-    int virtual execute(vector<string> vector, int index, bool onlyIndex) override;
+    int virtual execute(vector<string> vector, int index) override;
 };
 
 class ConnectCommand : public Command {
@@ -46,17 +47,17 @@ public:
         this->threads = thread1;
     }
 
-    int virtual execute(vector<string> vector, int index, bool onlyIndex) override;
+    int virtual execute(vector<string> vector, int index) override;
 };
 
 class DefineVarCommand : public Command {
 public:
-    int execute(vector<string> vector, int index, bool onlyIndex) override;
+    int execute(vector<string> vector, int index) override;
 };
 
 class PrintCommand : public Command {
 public:
-    int execute(vector<string> vector, int index, bool onlyIndex) override;
+    int execute(vector<string> vector, int index) override;
 };
 
 class IfCommand : public Command {
@@ -67,7 +68,7 @@ public:
         this->map = map1;
     }
 
-    int execute(vector<string> vector, int index, bool onlyIndex) override;
+    int execute(vector<string> vector, int index) override;
 };
 
 class WhileCommand : public Command {
@@ -78,12 +79,13 @@ public:
         this->map = map1;
     }
 
-    int execute(vector<string> vector, int index, bool onlyIndex) override;
+    int execute(vector<string> vector, int index) override;
 };
 
 class AssignVarCommand : public Command {
 public:
-    int execute(vector<string> vector, int index, bool onlyIndex) override;
+    int execute(vector<string> vector, int index) override;
 };
+
 
 #endif //ADVANCEDE3_FLIGHTSIM_H

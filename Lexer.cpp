@@ -65,6 +65,7 @@ void varLexer(string line, string checkCom, vector<string> *v1, int i) {
 }
 
 void otherCasesLexer(string line, string checkCom, vector<string> *v1) {
+    checkCom.length();
     int firstLetter = line.find_first_not_of(" \t");
     int eqSignPlace = line.find_first_of("=");
     //insert name of var into vector

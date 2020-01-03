@@ -23,7 +23,7 @@ double strExpCalculate(string st) {
     double ans;
     bool checkIfNum = true;
     //check if the string is a number or expression - if expression- do interpreter, if number- do stod
-    for (int j = 0; j < st.length(); j++) {
+    for (unsigned int j = 0; j < st.length(); j++) {
         if (!isdigit(st[j])) {
             //not a number!
             if (st.at(j) != '.') {
@@ -32,9 +32,9 @@ double strExpCalculate(string st) {
                     e = interpreter.interpret(st);
                     ans = e->calculate();
                     delete e;
-                } catch (const char *e) {
-                    if (e != nullptr) {
-                        delete e;
+                } catch (const char *e1) {
+                    if (e1 != nullptr) {
+                        delete e1;
                     }
                     std::cout << e << std::endl;
                 }
@@ -54,7 +54,7 @@ double convStringToNum(vector<string> vector, int index) {
     return strExpCalculate(st);
 }
 
-int SleepCommand::execute(vector<string> vector, int index, bool onlyIndex) {
+int SleepCommand::execute(vector<string> vector, int index) {
     double ans = convStringToNum(vector, index + 1);
     this_thread::sleep_for(chrono::milliseconds((int) (ans)));
     return index + 2;
@@ -93,10 +93,15 @@ void runClient(const char *ip, unsigned short portShort) {
                     updateOrder.front()).getSim().length() - 2);
             string msg = "set " + add + " " +
                          to_string(toClient.at(updateOrder.front()).getValue()) + "\r\n";
-            char char_array[msg.length() + 1];
+            int len = msg.length() + 1;
+            char char_array[len];
+
             strcpy(char_array, msg.c_str());
+            std::vector<char> vec(msg.c_str(), msg.c_str() + len);
+            char* a = &vec[0];
+            //cout<<a<<" Heading -"<< fromServer.at("heading").getValue()<<endl;
             // Sending the message
-            int is_sent = send(client_socket, char_array, strlen(char_array), 0);
+            int is_sent = send(client_socket, a, strlen(char_array), 0);
             updateOrder.pop();
             if (is_sent == -1) {
                 std::cout << "Error sending message" << std::endl;
@@ -110,7 +115,7 @@ void runClient(const char *ip, unsigned short portShort) {
     close(client_socket);
 }
 
-int ConnectCommand::execute(vector<string> vector, int index, bool onlyIndex) {
+int ConnectCommand::execute(vector<string> vector, int index) {
     // Getting the necessary data to open a client server
     string address = vector.at(index + 1).substr(1, vector.at(index + 1).length() - 2);
     const char *ip = address.c_str();
@@ -196,7 +201,7 @@ void runServer(unsigned short portShort) {
     }
     // Accepting a client
     sockaddr_in Caddress;
-    int addreslen = sizeof(Caddress);
+    //int addreslen = sizeof(Caddress);
     int client_socket = accept(socketfd, (struct sockaddr *) &Caddress,
                                (socklen_t *) &Caddress);
     if (client_socket == -1) {
@@ -287,9 +292,7 @@ void runServer(unsigned short portShort) {
     }
 }
 
-int AssignVarCommand::execute(vector<string> vector, int index, bool onlyIndex) {
-    if (onlyIndex)
-        return index + 3;
+int AssignVarCommand::execute(vector<string> vector, int index) {
     string nameOfVar = vector[index];
     string eqSign = vector[index + 1];//always "="
     //value of var
@@ -305,7 +308,7 @@ int AssignVarCommand::execute(vector<string> vector, int index, bool onlyIndex) 
     return index + 3;
 }
 
-int OpenServerCommand::execute(vector<string> vector, int index, bool onlyIndex) {
+int OpenServerCommand::execute(vector<string> vector, int index) {
     // Getting the necessary data to open a server
     double ans = convStringToNum(vector, index + 1);
     string port = std::to_string(ans);
@@ -320,7 +323,7 @@ int OpenServerCommand::execute(vector<string> vector, int index, bool onlyIndex)
     return index + 2;
 }
 
-int PrintCommand::execute(vector<string> vector, int index, bool onlyIndex) {
+int PrintCommand::execute(vector<string> vector, int index) {
     string output = vector[index + 1];
     if (output[0] == '"') {
         // If it's a string
@@ -335,15 +338,13 @@ int PrintCommand::execute(vector<string> vector, int index, bool onlyIndex) {
     return index + 2;
 }
 
-int DefineVarCommand::execute(vector<string> vector, int index, bool onlyIndex) {
+int DefineVarCommand::execute(vector<string> vector, int index) {
     string nameOfVar, arrowOrEq, sim, address;
     double value = 0;
     nameOfVar = vector[index + 1];
     arrowOrEq = vector[index + 2];
     // If the var is initialized - var name arrow sim("address")
     if (vector[index + 2] == "->" || vector[index + 2] == "<-") {
-        if (onlyIndex)
-            return index + 5;
         sim = vector[index + 3];//always "sim"
         address = vector[index + 4];
         // Adding the variable to the map
@@ -395,14 +396,15 @@ bool conditionCheck(string cond) {
         return left == right;
     else if (op == "!=")
         return left != right;
+    else
+        return false;
 }
 
-int IfCommand::execute(vector<string> vector, int index, bool onlyIndex) {
+int IfCommand::execute(vector<string> vector, int index) {
     string ifCom = vector[index];//always "if"
     string cond = vector[index + 1];
     string leftParen = vector[index + 2];
     index = index + 3;
-    int startIndex = index;
     list < Command * > commandList;
     bool checkCond = conditionCheck(cond);
     if (checkCond) {
@@ -412,12 +414,12 @@ int IfCommand::execute(vector<string> vector, int index, bool onlyIndex) {
                 Command *c = map.at(vector[index]);
                 commandList.push_back(c);
                 mutex_lock.lock();
-                index = c->execute(vector, index, false);
+                index = c->execute(vector, index);
                 mutex_lock.unlock();
             } else {
                 commandList.push_back(assVar);
                 mutex_lock.lock();
-                index = assVar->execute(vector, index, false);
+                index = assVar->execute(vector, index);
                 mutex_lock.unlock();
             }
         }
@@ -431,7 +433,7 @@ int IfCommand::execute(vector<string> vector, int index, bool onlyIndex) {
     return index + 1;
 }
 
-int WhileCommand::execute(vector<string> vector, int index, bool onlyIndex) {
+int WhileCommand::execute(vector<string> vector, int index) {
     string whileCom = vector[index]; //always "while"
     string cond = vector[index + 1];
     string leftParen = vector[index + 2]; // {
@@ -441,7 +443,6 @@ int WhileCommand::execute(vector<string> vector, int index, bool onlyIndex) {
     bool checkCond = conditionCheck(cond);
     bool isFirst = true;
     list < Command * > commandList;
-    int num = 1;
     commandList.clear();
     while (bigCheck) {
         index = saveIndex;
@@ -454,12 +455,12 @@ int WhileCommand::execute(vector<string> vector, int index, bool onlyIndex) {
                         Command *c = map.at(vector[index]);
                         commandList.push_back(c);
                         mutex_lock.lock();
-                        index = c->execute(vector, index, false);
+                        index = c->execute(vector, index);
                         mutex_lock.unlock();
                     } else {
                         commandList.push_back(assVar);
                         mutex_lock.lock();
-                        index = assVar->execute(vector, index, false);
+                        index = assVar->execute(vector, index);
                         mutex_lock.unlock();
                     }
                 }
@@ -467,7 +468,7 @@ int WhileCommand::execute(vector<string> vector, int index, bool onlyIndex) {
                 for (auto const &c : commandList) {
                     if (c != NULL) {
                         mutex_lock.lock();
-                        index = c->execute(vector, index, false);
+                        index = c->execute(vector, index);
                         mutex_lock.unlock();
                     }
                 }
@@ -481,9 +482,8 @@ int WhileCommand::execute(vector<string> vector, int index, bool onlyIndex) {
             }
             return index + 1;
         }
-        num++;
     }
-
+    return index + 1;
 }
 
 
@@ -503,7 +503,7 @@ void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
                 }
             }
 
-            i = c->execute(fileVector, i, false);
+            i = c->execute(fileVector, i);
             if (i < vecLen) {
                 if (fileVector[i] != "var" && !afterDefineVarCom) {
                     if (beforeDefineVarCom) {
@@ -515,7 +515,7 @@ void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
             }
         } else {
             mutex_lock.lock();
-            i = assignVarCommand.execute(fileVector, i, false);
+            i = assignVarCommand.execute(fileVector, i);
             mutex_lock.unlock();
         }
     }

@@ -10,10 +10,11 @@ using namespace std;
 class  Command {
 
 public:
-    int virtual  execute (vector<string> vector,int index, bool onlyIndex) {
-        cout<<"Base execute"<<endl;
+    int virtual  execute (vector<string> vector,int index) {
+        cout<<"Base execute"<< vector[index]<<endl;
+        return 0;
     };
-    ~Command() {}
+    virtual ~Command() {}
 };
 
 #endif //FLIGHTSIM_COMMAND_Hf

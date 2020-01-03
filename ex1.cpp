@@ -108,11 +108,6 @@ Variable &Variable::operator--(int) {
 }
 
 Expression *Interpreter::interpret(string equation) {
-    /*cout << "Interpreter map Variables: " << endl;
-    for (auto &it: interpreter.getVariables()) {
-        cout << "\tName: " << it.first << ", Val: " << it.second << endl;
-    }*/
-    //cout<<"Interpreter here 1 equation: "<< equation <<endl;
     std::string::iterator end_pos = std::remove(equation.begin(), equation.end(), ' ');
     equation.erase(end_pos, equation.end());
     int n = equation.length();
@@ -127,8 +122,6 @@ Expression *Interpreter::interpret(string equation) {
     int numsOrVars = 0;
     //cout<<"Interpreter here 2 "<<endl;
     for (int i = 0; i < n; i++) {
-        // cout<<"Interpreter here 8 "<<endl;
-        char a = chars[i];
         //valid
         // in A-Z / a-z
         bool inABC = ((65 <= chars[i] && chars[i] <= 90) || (97 <= chars[i] && chars[i] <= 122) || chars[i] == 95);
@@ -226,7 +219,6 @@ Expression *Interpreter::interpret(string equation) {
                 queue.push(s);
                 numsOrVars++;
             } else {
-                //  cout<<"Interpreter here 3 "<<endl;
                 // it's a variable
                 int start = i;
                 bool inNums1 = ((48 <= (int) (chars[i + 1]) && (int) (chars[i + 1]) <= 57) || chars[i + 1] == 46);
@@ -264,7 +256,6 @@ Expression *Interpreter::interpret(string equation) {
         stack.pop();
     }
     delete[] (chars);
-    //cout<<"Interpreter here 9 "<<endl;
     return reversePolish(queue);
 }
 
