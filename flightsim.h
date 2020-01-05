@@ -5,27 +5,15 @@
 #ifndef ADVANCEDE3_FLIGHTSIM_H
 #define ADVANCEDE3_FLIGHTSIM_H
 
+#include <thread>
 #include "Command.h"
-#include "ex1.h"
-#include "VarInfo.h"
-#include <thread>
 #include <unordered_map>
-#include <vector>
-#include <fstream>
-#include <string>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <thread>
-#include <vector>
-#include <queue>
-#include <mutex>
 #include "map"
 
 class SleepCommand : public Command {
 public:
     int virtual execute(vector<string> vector, int index) override;
+    virtual ~SleepCommand() {}
 };
 
 class OpenServerCommand : public Command {
@@ -37,6 +25,7 @@ public:
     }
 
     int virtual execute(vector<string> vector, int index) override;
+    virtual ~OpenServerCommand() {}
 };
 
 class ConnectCommand : public Command {
@@ -48,16 +37,19 @@ public:
     }
 
     int virtual execute(vector<string> vector, int index) override;
+    virtual ~ConnectCommand() {}
 };
 
 class DefineVarCommand : public Command {
 public:
     int execute(vector<string> vector, int index) override;
+    virtual ~DefineVarCommand() {}
 };
 
 class PrintCommand : public Command {
 public:
     int execute(vector<string> vector, int index) override;
+    virtual ~PrintCommand() {}
 };
 
 class IfCommand : public Command {
@@ -69,6 +61,7 @@ public:
     }
 
     int execute(vector<string> vector, int index) override;
+    virtual ~IfCommand() {}
 };
 
 class WhileCommand : public Command {
@@ -80,11 +73,13 @@ public:
     }
 
     int execute(vector<string> vector, int index) override;
+    virtual ~WhileCommand() {}
 };
 
 class AssignVarCommand : public Command {
 public:
     int execute(vector<string> vector, int index) override;
+    virtual ~AssignVarCommand() {}
 };
 
 

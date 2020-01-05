@@ -9,7 +9,7 @@ using namespace std;
 #include <string>
 #include <vector>
 
-class lexer {
+class Lexer {
 public:
     static void openDataServerLexer(string line, string checkCom, int i, vector<string> *v1);
 

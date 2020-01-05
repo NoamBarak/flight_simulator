@@ -1,5 +1,5 @@
 #include <algorithm>
-#include "ex1.h"
+#include "Interpreter.h"
 
 // Value
 Value::Value(double val) {
@@ -246,9 +246,10 @@ Expression *Interpreter::interpret(string equation) {
         isOperator('-');
     } else if (!atLeastOneVarOrNum)
         throw "no vars or numbers";
-    /* else if (numOp == 0) {
+ else if (numOp == 0) {
          throw "no operation";
-     }*/
+     }
+
     // No more to read - push operators
     while (!stack.empty()) {
         std::string str(1, stack.top());

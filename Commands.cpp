@@ -2,9 +2,22 @@
 // Created by karin on 25/12/2019.
 //
 #include "flightsim.h"
-#include "ex1.h"
 #include <list>
 #include <iostream>
+#include <mutex>
+#include "VarInfo.h"
+#include "Command.h"
+#include "Interpreter.h"
+
+#include <thread>
+#include <unordered_map>
+#include <vector>
+#include <string>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <queue>
 
 extern unordered_map<string, VarInfo> toClient;
 extern unordered_map<string, VarInfo> fromServer;
@@ -14,9 +27,8 @@ extern bool firstVarInput;
 extern bool done;
 bool serverConnected = false;
 bool clientConnected = false;
-std::mutex mutex_lock;
-AssignVarCommand assignVarCommand = AssignVarCommand();
-Command *assVar = &assignVarCommand;
+extern std::mutex mutex_lock;
+extern Command *assVar;
 
 // Function to turn a string into a double by using our interpreter
 double strExpCalculate(string st) {
@@ -98,7 +110,7 @@ void runClient(const char *ip, unsigned short portShort) {
 
             strcpy(char_array, msg.c_str());
             std::vector<char> vec(msg.c_str(), msg.c_str() + len);
-            char* a = &vec[0];
+            char *a = &vec[0];
             //cout<<a<<" Heading -"<< fromServer.at("heading").getValue()<<endl;
             // Sending the message
             int is_sent = send(client_socket, a, strlen(char_array), 0);
@@ -486,6 +498,7 @@ int WhileCommand::execute(vector<string> vector, int index) {
     return index + 1;
 }
 
+/*
 
 void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
     int vecLen = fileVector.size();
@@ -519,4 +532,4 @@ void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
             mutex_lock.unlock();
         }
     }
-}
+}*/
