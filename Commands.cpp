@@ -43,12 +43,11 @@ double strExpCalculate(string st) {
                 try {
                     e = interpreter.interpret(st);
                     ans = e->calculate();
-                    delete e;
+                    //delete e;
                 } catch (const char *e1) {
                     if (e1 != nullptr) {
-                        delete e1;
                     }
-                    std::cout << e << std::endl;
+                    //std::cout << e << std::endl;
                 }
                 checkIfNum = false;
                 break;
@@ -232,20 +231,28 @@ void runServer(unsigned short portShort) {
         char buffer[1024] = {0};
         int valread = read(client_socket, buffer, 1024);
         // Getting an XML data from the buffer
+        //cout<<"Buffer1 "<<buffer<<endl;
         string b = buffer;
         string a;
         // We want to make sure we only get one line of the XML data
         int firstEnter = -1, secondEnter = -1;
         // Finding the first \n
+        int count =0;
+
         for (int i = 0; i < 1024; i++) {
             if (buffer[i] == '\n') {
                 firstEnter = i;
                 break;
             }
+            if(buffer[i]==','){
+                count++;
+            }
         }
         // If there isn't even one \n or if there isn't enough data - the buffer is invalid
-        if (firstEnter == -1 || b.size() < 324)
+        //|| b.size() < 324
+        if (firstEnter == -1 ||count<35){
             continue;
+        }
         // Finding the second \n
         for (int j = (firstEnter + 1); j < 1024; j++) {
             //cout<<"HERE IN FOR"<<endl;
@@ -256,12 +263,15 @@ void runServer(unsigned short portShort) {
         }
         // If the there isnt another \n - it means our data is stored in indexes 0 to firstEnter(\n)
         if (secondEnter == -1) {
+            //cout<<"A"<<endl;
             a = b.substr(0, firstEnter - 1);
 
         } else {
             // The data is stored in indexes firstEnter to secondEnter
+            //cout<<"B"<<endl;
             a = b.substr(firstEnter + 1, secondEnter - firstEnter - 2);
         }
+        //cout<<"Buffer2: "<<a<<endl;
         // Now our string only contains the relevant XML data, so we will split the data accordingly
         vector<string> vector;
         string st;
