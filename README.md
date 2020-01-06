@@ -1,5 +1,7 @@
 # Code Interpreter to remotely control a flight simulator
-Created as a university project in Advanced Programming. 
+Created as a university project in Advanced Programming.
+
+Link to Github - https://github.com/NoamBarak/flight_simulator - Daniela added as contributor.
 
 ### Introduction
 In this project we are creating a program that will remotely help 

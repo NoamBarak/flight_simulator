@@ -32,8 +32,6 @@ public:
     Value(double val);
 
     double calculate() override;
-
-    //~Value() override;
 };
 
 class Variable : public Expression {
@@ -49,7 +47,6 @@ public:
 
     double calculate() override;
 
-    //~Variable();
     Variable &operator++();
 
     Variable &operator--();
@@ -74,8 +71,6 @@ public:
     Expression *getRight();
 
     double calculate() override;
-
-    //~BinaryOperator();
 
 };
 

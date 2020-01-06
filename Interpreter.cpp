@@ -120,21 +120,18 @@ Expression *Interpreter::interpret(string equation) {
     int rightBar = 0;
     int numOp = 0;
     int numsOrVars = 0;
-    //cout<<"Interpreter here 2 "<<endl;
     for (int i = 0; i < n; i++) {
         //valid
         // in A-Z / a-z
         bool inABC = ((65 <= chars[i] && chars[i] <= 90) || (97 <= chars[i] && chars[i] <= 122) || chars[i] == 95);
         bool isOp = (isOperator(chars[i]));
         bool inNums = ((48 <= (int) (chars[i]) && (int) (chars[i]) <= 57) || chars[i] == 46) || chars[i] == '0';
-        //cout<<"Interpreter here 10 "<<endl;
         if (!isOp && !inNums && !(inABC)) {
             cout << "problematic char: " << chars[i] << endl;
             throw "invalid";
         }
         // If it's an operator
         if (isOperator(chars[i])) {
-            //  cout<<"Interpreter here 4 "<<endl;
             // checking that the next char is a valid char
             bool flag = false;
             bool inNums1 = ((48 <= (int) (chars[i + 1]) && (int) (chars[i + 1]) <= 57) || chars[i] == 46) ||

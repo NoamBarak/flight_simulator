@@ -2,13 +2,13 @@
 // Created by karin on 25/12/2019.
 //
 #include "flightsim.h"
-#include <list>
-#include <iostream>
-#include <mutex>
 #include "VarInfo.h"
 #include "Command.h"
 #include "Interpreter.h"
 
+#include <list>
+#include <iostream>
+#include <mutex>
 #include <thread>
 #include <unordered_map>
 #include <vector>
@@ -43,11 +43,9 @@ double strExpCalculate(string st) {
                 try {
                     e = interpreter.interpret(st);
                     ans = e->calculate();
-                    //delete e;
                 } catch (const char *e1) {
                     if (e1 != nullptr) {
                     }
-                    //std::cout << e << std::endl;
                 }
                 checkIfNum = false;
                 break;
@@ -61,11 +59,13 @@ double strExpCalculate(string st) {
 }
 
 double convStringToNum(vector<string> vector, int index) {
+    // Converting the data at vector index to by using the interpreter
     string st = vector.at(index);
     return strExpCalculate(st);
 }
 
 int SleepCommand::execute(vector<string> vector, int index) {
+    // Interpreting
     double ans = convStringToNum(vector, index + 1);
     this_thread::sleep_for(chrono::milliseconds((int) (ans)));
     return index + 2;
@@ -110,7 +110,6 @@ void runClient(const char *ip, unsigned short portShort) {
             strcpy(char_array, msg.c_str());
             std::vector<char> vec(msg.c_str(), msg.c_str() + len);
             char *a = &vec[0];
-            //cout<<a<<" Heading -"<< fromServer.at("heading").getValue()<<endl;
             // Sending the message
             int is_sent = send(client_socket, a, strlen(char_array), 0);
             updateOrder.pop();
@@ -195,7 +194,7 @@ void runServer(unsigned short portShort) {
         exit(-1);
     }
     // Bind the socket to an IP address
-    sockaddr_in address; //in means IP4
+    sockaddr_in address;
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(portShort);
@@ -204,7 +203,7 @@ void runServer(unsigned short portShort) {
         exit(-2);
     }
     // Making the socket listen
-    if (listen(socketfd, 5) == -1) { //can also set to SOMAXCON (max connections)
+    if (listen(socketfd, 5) == -1) {
         std::cerr << "Error during listening command" << std::endl;
         exit(-3);
     } else {
@@ -212,7 +211,6 @@ void runServer(unsigned short portShort) {
     }
     // Accepting a client
     sockaddr_in Caddress;
-    //int addreslen = sizeof(Caddress);
     int client_socket = accept(socketfd, (struct sockaddr *) &Caddress,
                                (socklen_t *) &Caddress);
     if (client_socket == -1) {
@@ -231,31 +229,28 @@ void runServer(unsigned short portShort) {
         char buffer[1024] = {0};
         int valread = read(client_socket, buffer, 1024);
         // Getting an XML data from the buffer
-        //cout<<"Buffer1 "<<buffer<<endl;
         string b = buffer;
         string a;
         // We want to make sure we only get one line of the XML data
         int firstEnter = -1, secondEnter = -1;
         // Finding the first \n
-        int count =0;
+        int count = 0;
 
         for (int i = 0; i < 1024; i++) {
             if (buffer[i] == '\n') {
                 firstEnter = i;
                 break;
             }
-            if(buffer[i]==','){
+            if (buffer[i] == ',') {
                 count++;
             }
         }
         // If there isn't even one \n or if there isn't enough data - the buffer is invalid
-        //|| b.size() < 324
-        if (firstEnter == -1 ||count<35){
+        if (firstEnter == -1 || count < 35) {
             continue;
         }
         // Finding the second \n
         for (int j = (firstEnter + 1); j < 1024; j++) {
-            //cout<<"HERE IN FOR"<<endl;
             if (buffer[j] == '\n') {
                 secondEnter = j;
                 break;
@@ -263,15 +258,12 @@ void runServer(unsigned short portShort) {
         }
         // If the there isnt another \n - it means our data is stored in indexes 0 to firstEnter(\n)
         if (secondEnter == -1) {
-            //cout<<"A"<<endl;
             a = b.substr(0, firstEnter - 1);
 
         } else {
             // The data is stored in indexes firstEnter to secondEnter
-            //cout<<"B"<<endl;
             a = b.substr(firstEnter + 1, secondEnter - firstEnter - 2);
         }
-        //cout<<"Buffer2: "<<a<<endl;
         // Now our string only contains the relevant XML data, so we will split the data accordingly
         vector<string> vector;
         string st;
@@ -427,7 +419,7 @@ int IfCommand::execute(vector<string> vector, int index) {
     string cond = vector[index + 1];
     string leftParen = vector[index + 2];
     index = index + 3;
-    list < Command * > commandList;
+    list<Command *> commandList;
     bool checkCond = conditionCheck(cond);
     if (checkCond) {
         while (vector[index] != "}") {
@@ -464,7 +456,7 @@ int WhileCommand::execute(vector<string> vector, int index) {
     bool bigCheck = true;
     bool checkCond = conditionCheck(cond);
     bool isFirst = true;
-    list < Command * > commandList;
+    list<Command *> commandList;
     commandList.clear();
     while (bigCheck) {
         index = saveIndex;
@@ -507,39 +499,3 @@ int WhileCommand::execute(vector<string> vector, int index) {
     }
     return index + 1;
 }
-
-/*
-
-void parser(unordered_map<string, Command *> map, vector<string> fileVector) {
-    int vecLen = fileVector.size();
-    int i = 0;
-    bool beforeDefineVarCom = false;
-    bool afterDefineVarCom = false;
-    while (i < vecLen) {
-        //Command
-        if (map.find(fileVector[i]) != map.end()) {
-            Command *c = map.at(fileVector[i]);
-            if (fileVector[i] == "var") {
-                if (!beforeDefineVarCom) {
-                    //this is the first DefineVar command
-                    beforeDefineVarCom = true;
-                }
-            }
-
-            i = c->execute(fileVector, i);
-            if (i < vecLen) {
-                if (fileVector[i] != "var" && !afterDefineVarCom) {
-                    if (beforeDefineVarCom) {
-                        //this is the first command after DefineVar
-                        afterDefineVarCom = true;
-                        firstVarInput = afterDefineVarCom;
-                    }
-                }
-            }
-        } else {
-            mutex_lock.lock();
-            i = assignVarCommand.execute(fileVector, i);
-            mutex_lock.unlock();
-        }
-    }
-}*/

@@ -6,6 +6,7 @@
 #include "Interpreter.h"
 #include "lexer.h"
 #include "flightsim.h"
+
 std::mutex mutex_lock;
 AssignVarCommand assignVarCommand = AssignVarCommand();
 Command *assVar = &assignVarCommand;
